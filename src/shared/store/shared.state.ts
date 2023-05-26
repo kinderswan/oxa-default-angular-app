@@ -24,22 +24,13 @@ export interface SharedModel {
 })
 @Injectable()
 export class SharedState {
-  @Selector([SharedState, SharedState.getEnabledFeatures])
-  static getDashboardNavigationItems(state: SharedModel, features: string[]) {
-    return state.navigation.dashboard.filter(nav => !nav.permissions || features.includes(nav.permissions))
+  @Selector([SharedState])
+  static getDashboardNavigationItems(state: SharedModel) {
+    return state.navigation.dashboard
   }
 
   @Selector([SharedState])
   static getSettingsNavigationItems(state: SharedModel) {
     return state.navigation.settings
-  }
-
-  @Selector([SharedState])
-  static getEnabledFeatures(state: SharedModel) {
-    return (
-      Object.entries(state.features || {})
-        .filter(([_, value]) => Boolean(value))
-        .map(([key, _]) => key) ?? []
-    )
   }
 }

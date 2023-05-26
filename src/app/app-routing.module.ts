@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core'
 import { RouterModule, Routes } from '@angular/router'
 
 // import { canActivateAuth } from '@core/auth/auth.service'
-import { ShouldLoginComponent } from '@shared/components/auth/should-login.component'
 
 const routes: Routes = [
   {
@@ -24,7 +23,6 @@ const routes: Routes = [
       },
     ],
   },
-  { path: 'should-login', component: ShouldLoginComponent },
 ]
 
 @NgModule({

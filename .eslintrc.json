@@ -61,7 +61,7 @@
           "error",
           {
             "checkDecorators": ["Component", "Directive", "Injectable"],
-            "alias": ["untilDestroyed"]
+            "alias": ["takeUntilDestroyed"]
           }
         ],
         "no-unused-vars": "off",

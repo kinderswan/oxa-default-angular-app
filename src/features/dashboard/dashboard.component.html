@@ -8,7 +8,9 @@
   </a>
 </oxa-toolbar>
 <oxa-sidenav [sidenavItemTemplate]="sidenavItemTemplate" [items]="navItems$">
-  <router-outlet></router-outlet>
+  <div class="router-wrapper">
+    <router-outlet></router-outlet>
+  </div>
 </oxa-sidenav>
 
 <ng-template let-item #sidenavItemTemplate>
