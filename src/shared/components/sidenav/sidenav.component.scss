@@ -1,0 +1,42 @@
+@use '../../../styles/variables' as *;
+
+mat-sidenav-container {
+  height: calc(100vh - #{$header-height});
+}
+
+mat-sidenav {
+  width: $sidenav-width;
+  background: $light-gray-color;
+
+  mat-nav-list {
+    padding: 0;
+
+    mat-list-item {
+      &.active {
+        background-color: $gray-color;
+        border: 1px solid $white-color;
+      }
+    }
+  }
+}
+
+
+@media screen and (max-width: $xl) {
+  mat-sidenav {
+    width: $mini-sidenav-width;
+  }
+}
+
+::ng-deep {
+  .mdc-list-item__primary-text {
+    display: flex;
+    align-items: center;
+    gap: $base-margin;
+
+    @media screen and (max-width: 1200px) {
+      span {
+        display: none;
+      }
+    }
+  }
+}

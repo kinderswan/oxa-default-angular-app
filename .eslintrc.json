@@ -1,0 +1,94 @@
+{
+  "root": true,
+  "ignorePatterns": ["projects/**/*"],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "parserOptions": {
+        "project": ["tsconfig.json", "e2e/tsconfig.json"],
+        "createDefaultProgram": true,
+        "ecmaVersion": "latest"
+      },
+      "plugins": ["rxjs-angular"],
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@angular-eslint/recommended",
+        "plugin:@angular-eslint/template/process-inline-templates",
+        "plugin:prettier/recommended",
+        "plugin:@rx-angular/recommended",
+        "plugin:rxjs/recommended"
+      ],
+      "rules": {
+        "prettier/prettier": "off",
+        "@typescript-eslint/no-namespace": "off",
+        "@angular-eslint/component-class-suffix": [
+          "error",
+          {
+            "suffixes": [
+              "Component"
+            ]
+          }
+        ],
+        "@angular-eslint/directive-selector": [
+          "error",
+          {
+            "type": "attribute",
+            "prefix": "oxa",
+            "style": "camelCase"
+          }
+        ],
+        "@angular-eslint/component-selector": [
+          "error",
+          {
+            "type": "element",
+            "prefix": "oxa",
+            "style": "kebab-case"
+          }
+        ],
+        "@angular-eslint/prefer-on-push-component-change-detection": "error",
+        "no-restricted-imports": ["error", { "patterns": [
+          "src/*",
+          "@oxa/core/*",
+          "@oxa/shared/*",
+          "@oxa/features/*",
+          "@oxa/features/dashboard/pages/*",
+          "@oxa/features/settings/pages/*",
+          "@angular/compiler"
+        ] }],
+        "@rx-angular/no-explicit-change-detection-apis": "off",
+        "rxjs-angular/prefer-takeuntil": [
+          "error",
+          {
+            "checkDecorators": ["Component", "Directive", "Injectable"],
+            "alias": ["untilDestroyed"]
+          }
+        ],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
+          }
+        ],
+        "@typescript-eslint/explicit-member-accessibility": ["error", { "accessibility": "no-public" }],
+        "@angular-eslint/no-input-rename": "off"
+      }
+    },
+    {
+      "files": ["*.html"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
+      "rules": {}
+    },
+    {
+      "files": ["*.html"],
+      "excludedFiles": ["*inline-template-*.component.html"],
+      "extends": ["plugin:prettier/recommended"],
+      "rules": {
+        "prettier/prettier": ["error", { "parser": "angular" }]
+      }
+    }
+  ]
+}

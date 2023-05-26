@@ -1,0 +1,17 @@
+<oxa-toolbar>
+  <a mat-icon-button routerLink="../dashboard" title="Home">
+    <mat-icon aria-label="home icon">home</mat-icon>
+  </a>
+
+  <a mat-icon-button routerLink="../settings" title="Settings">
+    <mat-icon aria-label="settings icon">settings</mat-icon>
+  </a>
+</oxa-toolbar>
+<oxa-sidenav [sidenavItemTemplate]="sidenavItemTemplate" [items]="navItems$">
+  <router-outlet></router-outlet>
+</oxa-sidenav>
+
+<ng-template let-item #sidenavItemTemplate>
+  <mat-icon color="primary" [matTooltip]="item.title" matTooltipPosition="right">{{ item.icon }}</mat-icon>
+  <span>{{ item.title }}</span>
+</ng-template>

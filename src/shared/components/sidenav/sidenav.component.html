@@ -1,0 +1,14 @@
+<mat-sidenav-container>
+  <mat-sidenav opened mode="side">
+    <mat-nav-list>
+      <mat-list-item *rxFor="let item of items$" [routerLink]="item.url" #listItem routerLinkActive="active">
+        <ng-container
+          [ngTemplateOutlet]="sidenavItemTemplate"
+          [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <ng-content></ng-content>
+  </mat-sidenav-content>
+</mat-sidenav-container>
