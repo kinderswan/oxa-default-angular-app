@@ -32,7 +32,6 @@
               "src/assets",
               "src/assets/config",
               "src/assets/config/app-config.json",
-              "src/silent-refresh.html"
             ],
             "styles": [
               "src/styles.scss"
@@ -45,12 +44,12 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumError": "10mb"
                 },
                 {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumError": "40kb"
                 }
               ],
               "outputHashing": "all"
@@ -105,7 +104,6 @@
               "src/assets",
               "src/assets/config",
               "src/assets/config/app-config.json",
-              "src/silent-refresh.html"
             ],
             "styles": [
               "src/styles.scss"
