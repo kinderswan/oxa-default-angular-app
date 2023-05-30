@@ -8,6 +8,8 @@ import { RxCommonModule } from '@shared/rx-common.module'
 import { RouterModule } from '@angular/router'
 import { NgxsModule } from '@ngxs/store'
 import { ProfileState } from './store/profile.state'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
 
 @NgModule({
   declarations: [ProfileContainerComponent, ProfileInfoComponent, ProfileActionsComponent],
@@ -16,6 +18,8 @@ import { ProfileState } from './store/profile.state'
     CommonModule,
     RxCommonModule,
     MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
   ],
   providers: [importProvidersFrom(NgxsModule.forFeature([ProfileState]))],
   exports: [ProfileContainerComponent],

@@ -1,4 +1,4 @@
-import { UserProfileModel } from '@settings/profile/store/user-profile.model'
+import { UserProfileModel as string } from '@settings/profile/store/user-profile.model'
 
 export enum MediaStatus {
   DRAFT = 'Draft',
@@ -8,9 +8,14 @@ export enum MediaStatus {
 }
 
 export interface MediaItemModel {
-  id: string
+  id: string | 'null'
   name: string
   status: MediaStatus
-  createdBy: UserProfileModel
+  createdBy: string
   lastUpdated: Date | number
+}
+
+export interface Paginated<T> {
+  items: T[]
+  total: number
 }

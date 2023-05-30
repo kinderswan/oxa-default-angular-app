@@ -3,6 +3,7 @@ import { MediaItemModel } from './media-item.model'
 export namespace Media {
   export class LoadMediaItems {
     static readonly type = '[Media] Load Media Items'
+    constructor(public skip: number, public limit: number) {}
   }
 
   export class AddMediaItem {

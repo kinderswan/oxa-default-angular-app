@@ -1,0 +1,39 @@
+:host {
+  .mat-mdc-cell {
+    vertical-align: middle;
+    margin: 8px 0px;
+  }
+  .mat-mdc-header-cell {
+    vertical-align: middle;
+    margin: 8px 0px;
+  }
+  .mat-column-actions > div {
+    display: flex;
+    gap: 4px
+  }
+
+  .spinner-wrapper {
+    padding: 16px 0;
+    min-height: 480px;
+    vertical-align: middle;
+    text-align: center;
+    display: flex;
+    mat-spinner {
+      margin: auto auto;
+      vertical-align: middle;
+      
+    }
+  }
+
+  table {
+    .mat-column-id {
+      width: 40ch !important;
+    }
+
+    .mat-column-actions {
+      width: 25ch !important; 
+    }
+
+  }
+
+}

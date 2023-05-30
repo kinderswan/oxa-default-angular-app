@@ -3,7 +3,12 @@ export namespace Profile {
     static readonly type = '[Profile] Logout'
   }
 
-  export class LoadUserProfile {
-    static readonly type = '[Profile] Load User Profile'
+  export class SetUserProfile {
+    static readonly type = '[Profile] Set User Profile'
+    constructor(public data: any) {}
+  }
+
+  export class DeleteUserProfile {
+    static readonly type = '[Profile] Delete User Profile'
   }
 }

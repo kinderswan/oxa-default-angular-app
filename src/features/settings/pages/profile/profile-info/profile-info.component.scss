@@ -1,0 +1,13 @@
+:host {
+  height: 240px;
+  display: flex;
+
+  .wrapper {
+    display: flex;
+
+    & > * {
+      display: flex;
+    }
+    gap: 16px
+  }
+}

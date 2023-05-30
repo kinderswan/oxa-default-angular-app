@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
-import { authServiceMockProvider, oauthServiceMockProvider } from '@core/auth/auth.service.mock'
 import { NgxsModule } from '@ngxs/store'
 import { RxCommonModule } from '@shared/rx-common.module'
 import { ProfileActionsComponent } from '../profile-actions/profile-actions.component'
@@ -16,7 +15,6 @@ describe('ProfileContainerComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ProfileContainerComponent, ProfileInfoComponent, ProfileActionsComponent],
       imports: [NgxsModule.forRoot([ProfileState]), RxCommonModule],
-      providers: [authServiceMockProvider, oauthServiceMockProvider],
     }).compileComponents()
 
     fixture = TestBed.createComponent(ProfileContainerComponent)

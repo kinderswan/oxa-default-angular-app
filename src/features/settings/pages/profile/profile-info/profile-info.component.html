@@ -1,1 +1,6 @@
-<ng-container *rxLet="profile$ | push; let profile"> {{ profile.name }} {{ profile.email }} </ng-container>
+<ng-container *rxLet="profile$ | push; let profile">
+  <div class="wrapper">
+    <h2 class="mat-h2">Email:</h2>
+    <h2>{{ profile?.email }}</h2>
+  </div>
+</ng-container>

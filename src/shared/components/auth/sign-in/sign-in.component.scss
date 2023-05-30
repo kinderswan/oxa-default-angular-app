@@ -1,0 +1,22 @@
+:host {
+  height: calc(100vh - 64px);
+  display: flex;
+  .signin-card {
+    height: auto;
+    width: 33vw;
+    margin-top: auto;
+    margin: auto;
+  }
+  .signin-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .signin-header {
+    justify-content: center;
+  }
+
+  .signin-actions {
+    justify-content: flex-end;
+  }
+}
