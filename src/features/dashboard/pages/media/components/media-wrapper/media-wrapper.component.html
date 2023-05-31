@@ -1,0 +1,6 @@
+<div class="title-divider">
+  <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
+  <button mat-stroked-button (click)="mergeItems()" [disabled]="selectedItems.length < 2">Merge selected</button>
+</div>
+
+<oxa-media-table (selectionChange)="onSelectionChange($event)"></oxa-media-table>

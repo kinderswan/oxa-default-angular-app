@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core'
 import { DashboardRoutingModule } from './dashboard-routing.module'
 import { DashboardComponent } from './dashboard.component'
 
-import { RxCommonModule } from '@shared/rx-common.module'
 import { MatIconModule } from '@angular/material/icon'
 import { ToolbarComponent } from '@shared/components/toolbar/toolbar.component'
 import { SidenavComponent } from '@shared/components/sidenav/sidenav.component'
@@ -15,7 +14,6 @@ import { MatButtonModule } from '@angular/material/button'
   imports: [
     CommonModule,
     DashboardRoutingModule,
-    RxCommonModule,
     SidenavComponent,
     ToolbarComponent,
     MatIconModule,

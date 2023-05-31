@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core'
-import { NgxsOnInit, Selector, State } from '@ngxs/store'
-import { dashboardNavItems, settingsNavItems } from '@shared/models/navigation'
-import { featureFlags, Features } from '@shared/models/features'
+import { Selector, State } from '@ngxs/store'
 import { SidenavItem } from '@shared/components/sidenav/sidenav-item'
+import { Features, featureFlags } from '@shared/models/features'
+import { dashboardNavItems, settingsNavItems } from '@shared/models/navigation'
 
 export interface SharedModel {
   navigation: {

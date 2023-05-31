@@ -1,4 +1,9 @@
 :host {
-  height: 100%;
-  display: block;
+  amplify-authenticator {
+    height: 100%;
+    display: block;
+  }
+  ::ng-deep [data-amplify-authenticator] {
+    height: 100% !important;
+  }
 }

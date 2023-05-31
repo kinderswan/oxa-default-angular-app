@@ -1,11 +1,11 @@
 :host {
-  height: calc(100vh - 64px);
   display: flex;
+  flex-direction: column;
   .signin-card {
     height: auto;
     width: 33vw;
-    margin-top: auto;
     margin: auto;
+    margin-top: 64px;
   }
   .signin-form {
     display: flex;

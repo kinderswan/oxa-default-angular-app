@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
+import { Core } from '@core/store/core.actions'
 import { CoreState } from '@core/store/core.state'
 import { Select, Store } from '@ngxs/store'
 import { Observable } from 'rxjs'
-import { Profile } from '../store/profile.actions'
-import { UserProfileModel } from '../store/user-profile.model'
 
 @Component({
   selector: 'oxa-profile-container',
@@ -12,11 +11,11 @@ import { UserProfileModel } from '../store/user-profile.model'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileContainerComponent {
-  @Select(CoreState.getProfile) profile$: Observable<UserProfileModel>
-
   constructor(private store: Store) {}
 
+  @Select(CoreState.getCurrentUser) profile$: Observable<string>
+
   logout() {
-    this.store.dispatch(new Profile.Logout())
+    this.store.dispatch(new Core.Logout())
   }
 }

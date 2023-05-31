@@ -1,9 +1,12 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Output } from '@angular/core'
+import { MatButtonModule } from '@angular/material/button'
 
 @Component({
   selector: 'oxa-profile-actions',
   templateUrl: './profile-actions.component.html',
   styleUrls: ['./profile-actions.component.scss'],
+  standalone: true,
+  imports: [MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileActionsComponent {
@@ -12,6 +15,6 @@ export class ProfileActionsComponent {
   @Output() userInfoRequested = new EventEmitter<void>()
 
   endSession() {
-    this.logout.next()
+    this.logout.emit()
   }
 }

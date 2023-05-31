@@ -2,6 +2,8 @@
 @use './styles/theme' as theme;
 @use './styles/variables' as variables;
 
+@import '~@aws-amplify/ui-angular/theme.css';
+
 :root {
   height: 100%;
   body {

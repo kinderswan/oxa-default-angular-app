@@ -1,5 +1,3 @@
-import { UserProfileModel as string } from '@settings/profile/store/user-profile.model'
-
 export enum MediaStatus {
   DRAFT = 'Draft',
   DELIVERING = 'Delivering',

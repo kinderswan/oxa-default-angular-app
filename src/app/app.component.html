@@ -1,1 +1,6 @@
-<router-outlet></router-outlet>
+<amplify-authenticator *rxIf="envLoaded$">
+  <ng-template amplifySlot="authenticated" let-user="user">
+    <oxa-user-init [user]="user"></oxa-user-init>
+    <router-outlet></router-outlet>
+  </ng-template>
+</amplify-authenticator>

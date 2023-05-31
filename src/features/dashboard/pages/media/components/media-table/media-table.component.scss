@@ -34,6 +34,15 @@
       width: 25ch !important; 
     }
 
+    .mat-column-name {
+      width: 40ch !important; 
+    }
+
+    .mat-column-status {
+      width: 30ch !important; 
+      max-width: 30ch !important;
+    }
+
   }
 
 }

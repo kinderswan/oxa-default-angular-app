@@ -6,7 +6,6 @@ import { insertItem, patch, removeItem } from '@ngxs/store/operators'
 import { tap } from 'rxjs'
 import { MediaItemModel, MediaStatus, Paginated } from './media-item.model'
 import { Media } from './media.actions'
-import { CognitoService } from '@core/auth/cognito.service'
 
 export interface MediaModel {
   items?: MediaItemModel[]
@@ -23,7 +22,7 @@ export interface MediaModel {
 @Injectable()
 export class MediaState {
   private apiUrl = '/media'
-  private baseUrl: string | undefined
+  private baseUrl = ''
 
   constructor(private store: Store, private httpService: HttpClient) {
     this.baseUrl = `${this.store.selectSnapshot(CoreState.getAppConfig).baseUrl}${this.apiUrl}`
@@ -41,36 +40,44 @@ export class MediaState {
 
   @Action(Media.LoadMediaItems)
   loadMediaItems({ setState }: StateContext<MediaModel>, action: Media.LoadMediaItems) {
-    return this.httpService
-      .get<Paginated<MediaItemModel>>(this.baseUrl!, {
-        params: {
-          skip: action.skip,
-          limit: action.limit,
-        },
-      })
-      .pipe(
-        tap(data =>
-          setState(
-            patch({
-              items: data.items,
-              total: data.total,
-            })
-          )
+    const params: Record<string, string | number> = {
+      limit: action.limit,
+    }
+
+    if (action.lastId) {
+      params['lastId'] = action.lastId
+    }
+
+    if (action.order) {
+      params['order'] = action.order
+    }
+
+    if (action.sort) {
+      params['sort'] = action.sort
+    }
+    return this.httpService.get<Paginated<MediaItemModel>>(this.baseUrl, { params }).pipe(
+      tap(data =>
+        setState(
+          patch({
+            items: data.items,
+            total: data.total,
+          })
         )
       )
+    )
   }
 
   @Action(Media.SaveMediaItem)
   saveMediaItems(_: StateContext<MediaModel>, action: Media.SaveMediaItem) {
-    const currentUser = this.store.selectSnapshot(CoreState.getProfile)
+    const currentUser = this.store.selectSnapshot(CoreState.getCurrentUser)
     if (action.item.id === 'null') {
-      return this.httpService.post<MediaItemModel>(this.baseUrl!, {
+      return this.httpService.post<MediaItemModel>(this.baseUrl, {
         name: action.item.name,
         status: action.item.status,
-        createdBy: currentUser?.email ?? '',
+        createdBy: currentUser,
       })
     }
-    return this.httpService.put<MediaItemModel>(this.baseUrl!, {
+    return this.httpService.put<MediaItemModel>(this.baseUrl, {
       name: action.item.name,
       status: action.item.status,
       id: action.item.id,
@@ -78,15 +85,17 @@ export class MediaState {
   }
 
   @Action(Media.RemoveMediaItem)
-  removeMediaItem({ setState }: StateContext<MediaModel>, action: Media.RemoveMediaItem) {
-    if (action.id === 'null') {
-      return setState(
-        patch({
-          items: removeItem(item => item.id === action?.id),
-        })
-      )
-    }
+  removeMediaItem(_: StateContext<MediaModel>, action: Media.RemoveMediaItem) {
     return this.httpService.delete(`${this.baseUrl}/${action.id}`)
+  }
+
+  @Action(Media.RemoveNotAddedMediaItem)
+  removeNotAddedMediaItem({ setState }: StateContext<MediaModel>) {
+    return setState(
+      patch({
+        items: removeItem(item => item.id === 'null'),
+      })
+    )
   }
 
   @Action(Media.AddMediaItem)
@@ -108,5 +117,12 @@ export class MediaState {
         ),
       })
     )
+  }
+
+  @Action(Media.MergeMediaItems)
+  mergeMediaItems(_: StateContext<MediaModel>, action: Media.MergeMediaItems) {
+    return this.httpService.post<{ ids: MediaItemModel['id'][] }>(`${this.baseUrl}/merge`, {
+      ids: action.selectedIds,
+    })
   }
 }
