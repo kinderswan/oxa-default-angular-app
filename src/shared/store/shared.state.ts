@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core'
 import { Selector, State } from '@ngxs/store'
 import { SidenavItem } from '@shared/components/sidenav/sidenav-item'
-import { Features, featureFlags } from '@shared/models/features'
 import { dashboardNavItems, settingsNavItems } from '@shared/models/navigation'
 
 export interface SharedModel {
@@ -9,7 +8,6 @@ export interface SharedModel {
     dashboard: SidenavItem[]
     settings: SidenavItem[]
   }
-  features: Features
 }
 
 @State<SharedModel>({
@@ -19,7 +17,6 @@ export interface SharedModel {
       dashboard: dashboardNavItems,
       settings: settingsNavItems,
     },
-    features: featureFlags,
   },
 })
 @Injectable()
