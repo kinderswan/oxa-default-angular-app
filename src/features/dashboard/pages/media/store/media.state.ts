@@ -43,18 +43,12 @@ export class MediaState {
     const params: Record<string, string | number> = {
       limit: action.limit,
     }
+    ;(['lastId', 'order', 'sort'] as const).forEach(prop => {
+      if (action[prop]) {
+        params[prop] = action[prop]!
+      }
+    })
 
-    if (action.lastId) {
-      params['lastId'] = action.lastId
-    }
-
-    if (action.order) {
-      params['order'] = action.order
-    }
-
-    if (action.sort) {
-      params['sort'] = action.sort
-    }
     return this.httpService.get<Paginated<MediaItemModel>>(this.baseUrl, { params }).pipe(
       tap(data =>
         setState(

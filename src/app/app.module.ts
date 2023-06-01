@@ -22,7 +22,6 @@ import { RxIf } from '@rx-angular/template/if'
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    HttpClientModule,
     AppRoutingModule,
     NgxsModule.forRoot([CoreState, SharedState], {
       executionStrategy: NoopNgxsExecutionStrategy,

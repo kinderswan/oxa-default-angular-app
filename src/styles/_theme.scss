@@ -6,12 +6,82 @@
 @include mat.core();
 
 // Define a light theme
+
+$dark-primary-text: rgba(black, 0.87);
+$light-primary-text: white;
+
+$oxa-palette-primary: (
+  100: #b3dcf3,
+  500: #008ad7,
+  700: #006dc7,
+  contrast: (
+    50: $dark-primary-text,
+    100: $dark-primary-text,
+    200: $dark-primary-text,
+    300: $light-primary-text,
+    400: $light-primary-text,
+    500: $light-primary-text,
+    600: $light-primary-text,
+    700: $light-primary-text,
+    800: $light-primary-text,
+    900: $light-primary-text,
+    A100: $dark-primary-text,
+    A200: $light-primary-text,
+    A400: $light-primary-text,
+    A700: $light-primary-text,
+  )
+);
+
+$oxa-palette-secondary: (
+  100: #b9e8c5,
+  500: #14b13d,
+  700: #0b9827,
+  contrast: (
+    50: $dark-primary-text,
+    100: $dark-primary-text,
+    200: $dark-primary-text,
+    300: $light-primary-text,
+    400: $light-primary-text,
+    500: $light-primary-text,
+    600: $light-primary-text,
+    700: $light-primary-text,
+    800: $light-primary-text,
+    900: $light-primary-text,
+    A100: $dark-primary-text,
+    A200: $light-primary-text,
+    A400: $light-primary-text,
+    A700: $light-primary-text,
+  )
+);
+
+$oxa-palette-red: (
+  100: #f7b3b3,
+  500: #e40101,
+  700: #d90101,
+  contrast: (
+    50: $dark-primary-text,
+    100: $dark-primary-text,
+    200: $dark-primary-text,
+    300: $light-primary-text,
+    400: $light-primary-text,
+    500: $light-primary-text,
+    600: $light-primary-text,
+    700: $light-primary-text,
+    800: $light-primary-text,
+    900: $light-primary-text,
+    A100: $dark-primary-text,
+    A200: $light-primary-text,
+    A400: $light-primary-text,
+    A700: $light-primary-text,
+  )
+);
+
 $light-theme: mat.define-light-theme(
   (
     color: (
-      primary: mat.define-palette(mat.$indigo-palette),
-      accent: mat.define-palette(mat.$amber-palette),
-      warn: mat.define-palette(mat.$red-palette),
+      primary: mat.define-palette($oxa-palette-primary),
+      accent: mat.define-palette($oxa-palette-secondary),
+      warn: mat.define-palette($oxa-palette-red),
     ),
     typography: $custom-typography
   )
@@ -19,3 +89,13 @@ $light-theme: mat.define-light-theme(
 
 @include mat.core-theme($light-theme);
 @include mat.all-component-themes($light-theme);
+
+:root, [data-amplify-theme] {
+  --amplify-colors-teal-10: hsl(202, 73%, 83%);
+  --amplify-colors-teal-20: hsl(202, 73%, 73%);
+  --amplify-colors-teal-40: hsl(202, 68%, 63%);
+  --amplify-colors-teal-60: hsl(202, 48%, 38%);
+  --amplify-colors-teal-80: hsl(202, 93%, 38%);
+  --amplify-colors-teal-90: hsl(202, 100%, 8%);
+  --amplify-colors-teal-100: hsl(202, 100%, 3%);
+}

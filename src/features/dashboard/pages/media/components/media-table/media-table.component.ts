@@ -113,7 +113,7 @@ export class MediaTableComponent implements AfterViewInit {
     this.selection.clear()
     const item = this.mediaForm.controls.media.getRawValue().find(x => x?.id === id)
 
-    if (isEditing && item) {
+    if (isEditing && item && !this.checkIfChanged(item, id)) {
       this.store.dispatch(new Media.SaveMediaItem(item))
     }
     this.editingIdx = isEditing ? null : item?.id
@@ -185,5 +185,10 @@ export class MediaTableComponent implements AfterViewInit {
         }
       )
     }
+  }
+
+  private checkIfChanged(newItem: MediaItemModel, id: string) {
+    const oldItem = this.dataSource.data.find(x => x.id === id)
+    return (['name', 'status'] as const).every((prop: keyof MediaItemModel) => oldItem?.[prop] === newItem[prop])
   }
 }
