@@ -1,8 +1,24 @@
 <div class="title-divider">
-  <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
-  <button mat-raised-button color="accent" (click)="mergeItems()" [disabled]="selectedItems.length < 2">
-    Merge selected
-  </button>
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [formControl]="searchControl" placeholder="Search" />
+    <mat-icon matSuffix *rxIf="searchControl.value" (click)="searchControl.setValue('')">close</mat-icon>
+  </mat-form-field>
+  <div class="buttons-wrapper">
+    <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
+    <button mat-raised-button color="accent" (click)="mergeItems()" [disabled]="selectedItems.length < 2">
+      Merge selected
+    </button>
+  </div>
 </div>
 
-<oxa-media-table (selectionChange)="onSelectionChange($event)"></oxa-media-table>
+<oxa-media-table
+  [items]="items$"
+  [total]="total$"
+  [searchMode]="searchMode$"
+  [loading]="isLoading$"
+  (selectionChange)="onSelectionChange($event)"
+  (loadItems)="onLoadItems($event)"
+  (saveItem)="onSaveItem($event)"
+  (removeItem)="onRemoveItem($event)"
+  (cancelItem)="onCancelItem()"></oxa-media-table>

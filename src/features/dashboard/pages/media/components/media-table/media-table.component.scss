@@ -43,6 +43,13 @@
       max-width: 30ch !important;
     }
 
+    .mat-cell-no-data {
+      display: flex;
+      height: 52px;
+      justify-content: center;
+      align-items: center;
+    }
+
   }
 
 }

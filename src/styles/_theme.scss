@@ -83,12 +83,13 @@ $light-theme: mat.define-light-theme(
       accent: mat.define-palette($oxa-palette-secondary),
       warn: mat.define-palette($oxa-palette-red),
     ),
-    typography: $custom-typography
+    typography: $custom-typography,
   )
 );
 
 @include mat.core-theme($light-theme);
 @include mat.all-component-themes($light-theme);
+@include mat.form-field-density(-4); 
 
 :root, [data-amplify-theme] {
   --amplify-colors-teal-10: hsl(202, 73%, 83%);
@@ -98,4 +99,4 @@ $light-theme: mat.define-light-theme(
   --amplify-colors-teal-80: hsl(202, 93%, 38%);
   --amplify-colors-teal-90: hsl(202, 100%, 8%);
   --amplify-colors-teal-100: hsl(202, 100%, 3%);
-}
+};

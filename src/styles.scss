@@ -21,10 +21,13 @@
       padding-top: 4px !important;
       padding-bottom: 4px !important;
     }
-  
-    .mat-mdc-form-field-subscript-wrapper {
-      display: none !important;
-    }
+  }
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+  }
+
+  .mat-form-field-appearance-outline {
+    background-color: white;
   }
 
 }

@@ -4,10 +4,12 @@ export namespace Media {
   export class LoadMediaItems {
     static readonly type = '[Media] Load Media Items'
     constructor(
-      public lastId: string,
-      public limit: number,
-      public sort?: string,
-      public order?: 'asc' | 'desc' | ''
+      public options: {
+        skip: number
+        limit: number
+        sort?: string
+        order?: 'asc' | 'desc' | ''
+      }
     ) {}
   }
 
@@ -25,12 +27,17 @@ export namespace Media {
     constructor(public id?: MediaItemModel['id']) {}
   }
 
-  export class RemoveNotAddedMediaItem {
-    static readonly type = '[Media] Remove New Media Item'
+  export class RemoveDraftItem {
+    static readonly type = '[Media] Remove Draft Item'
   }
 
   export class MergeMediaItems {
     static readonly type = '[Media] Merge Media Items'
     constructor(public selectedIds: MediaItemModel['id'][]) {}
+  }
+
+  export class Search {
+    static readonly type = '[Media] Search Media Items'
+    constructor(public query: string, public limit = 100) {}
   }
 }

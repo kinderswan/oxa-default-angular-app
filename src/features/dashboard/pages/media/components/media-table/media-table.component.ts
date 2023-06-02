@@ -1,7 +1,14 @@
 import { SelectionModel } from '@angular/cdk/collections'
 import { CommonModule, DatePipe } from '@angular/common'
-import { AfterViewInit, ChangeDetectionStrategy, Component, Output, ViewChild } from '@angular/core'
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core'
 import { FormArray, FormBuilder, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCheckboxModule } from '@angular/material/checkbox'
@@ -13,13 +20,10 @@ import { MatSelectModule } from '@angular/material/select'
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
 import { MediaItemModel, MediaStatus } from '@dashboard/media/store/media-item.model'
-import { Media } from '@dashboard/media/store/media.actions'
-import { MediaState } from '@dashboard/media/store/media.state'
-import { Actions, Select, Store, ofActionDispatched, ofActionSuccessful } from '@ngxs/store'
-import { Observable, Subject, merge, of, startWith, switchMap, tap } from 'rxjs'
-import { PushPipe } from '@rx-angular/template/push'
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
+import { PushPipe } from '@rx-angular/template/push'
+import { BehaviorSubject, Observable, merge, of, switchMap, tap, withLatestFrom } from 'rxjs'
 @Component({
   selector: 'oxa-media-table',
   standalone: true,
@@ -45,19 +49,7 @@ import { LetDirective } from '@rx-angular/template/let'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MediaTableComponent implements AfterViewInit {
-  @Select(MediaState.getMedia) items$: Observable<MediaItemModel[]>
-
-  @Select(MediaState.getMediaTotal) total$: Observable<number>
-
-  @ViewChild('paginator') paginator: MatPaginator
-
-  @ViewChild(MatSort) sort: MatSort
-
   mediaItems$: Observable<MediaItemModel[]>
-
-  suspenseTrigger$ = this.actions.pipe(
-    ofActionDispatched(Media.MergeMediaItems, Media.SaveMediaItem, Media.RemoveMediaItem)
-  )
 
   displayedColumns = ['select', 'id', 'name', 'status', 'createdBy', 'lastUpdated', 'actions']
 
@@ -67,8 +59,6 @@ export class MediaTableComponent implements AfterViewInit {
 
   selection = new SelectionModel<MediaItemModel>(true, [])
 
-  @Output() selectionChange = this.selection.changed.pipe(switchMap(() => of(this.selection.selected)))
-
   mediaStatuses = Object.values(MediaStatus)
 
   pageSizes = [5, 10, 25, 50, 100]
@@ -77,25 +67,59 @@ export class MediaTableComponent implements AfterViewInit {
     media: this.fb.array<MediaItemModel>([]),
   })
 
-  private sortChange$ = new Subject<Sort>()
+  @Input('items') items$: Observable<MediaItemModel[]>
 
-  constructor(private fb: FormBuilder, private store: Store, private actions: Actions) {
-    this.actions
-      .pipe(ofActionSuccessful(Media.SaveMediaItem, Media.RemoveMediaItem, Media.MergeMediaItems), takeUntilDestroyed())
-      .subscribe(() => this.loadMediaItems())
+  @Input('total') total$: Observable<number>
 
-    this.actions
-      .pipe(ofActionSuccessful(Media.AddMediaItem), takeUntilDestroyed())
-      .subscribe(() => (this.editingIdx = 'null'))
+  @Input('searchMode') searchMode$: Observable<boolean>
+
+  @Input('loading') isLoading$: Observable<unknown>
+
+  @ViewChild('paginator') paginator: MatPaginator
+
+  @ViewChild(MatSort) sort: MatSort
+
+  @Output() selectionChange = this.selection.changed.pipe(switchMap(() => of(this.selection.selected)))
+
+  @Output() loadItems = new EventEmitter<{
+    skip: number
+    limit: number
+    sort?: string
+    order?: 'asc' | 'desc' | ''
+  }>()
+
+  @Output() saveItem = new EventEmitter<MediaItemModel>()
+
+  @Output() removeItem = new EventEmitter<MediaItemModel['id']>()
+
+  @Output() cancelItem = new EventEmitter<void>()
+
+  get currentSort() {
+    return this.sortChange$.value
   }
+
+  private sortChange$ = new BehaviorSubject<Sort>({
+    active: '',
+    direction: '',
+  })
+
+  constructor(private fb: FormBuilder) {}
 
   ngAfterViewInit(): void {
     this.mediaItems$ = merge(this.paginator.page, this.sortChange$).pipe(
-      startWith({}),
-      tap(() => this.loadMediaItems()),
-      switchMap(() => {
+      withLatestFrom(this.searchMode$),
+      tap(([_, searchMode]) => {
+        if (!searchMode) {
+          this.loadMediaItems()
+        }
+      }),
+      switchMap(([_, searchMode]) => {
         return this.items$.pipe(
           tap(data => {
+            if (!searchMode && this.paginator.disabled) {
+              this.paginator.pageSize = 25
+              this.paginator.disabled = false
+            }
             this.dataSource = new MatTableDataSource(data)
             this.selection.clear()
             this.setMediaFormArray(data)
@@ -103,6 +127,10 @@ export class MediaTableComponent implements AfterViewInit {
         )
       })
     )
+  }
+
+  itemAction() {
+    this.loadMediaItems()
   }
 
   trackMedia(_: number, item: MediaItemModel) {
@@ -114,19 +142,19 @@ export class MediaTableComponent implements AfterViewInit {
     const item = this.mediaForm.controls.media.getRawValue().find(x => x?.id === id)
 
     if (isEditing && item && !this.checkIfChanged(item, id)) {
-      this.store.dispatch(new Media.SaveMediaItem(item))
+      this.saveItem.emit(item)
     }
     this.editingIdx = isEditing ? null : item?.id
   }
 
   onRowRemove(id: MediaItemModel['id']) {
-    this.store.dispatch(new Media.RemoveMediaItem(id))
+    this.removeItem.emit(id)
   }
 
   onRowCancel(id: MediaItemModel['id']) {
     this.editingIdx = null
     if (id === 'null') {
-      return this.store.dispatch(new Media.RemoveNotAddedMediaItem())
+      return this.cancelItem.emit()
     }
     return this.resetControl(id)
   }
@@ -150,12 +178,31 @@ export class MediaTableComponent implements AfterViewInit {
     this.sortChange$.next($event)
   }
 
-  private loadMediaItems() {
-    const lastId = this.dataSource.data?.[this.dataSource.data.length - 1]?.['id']
+  resetEditingIndex(): void {
+    this.editingIdx = 'null'
+  }
 
-    this.store.dispatch(
-      new Media.LoadMediaItems(lastId, this.paginator.pageSize, this.sort?.active, this.sort?.direction)
-    )
+  resetTableState() {
+    this.paginator.pageIndex = 0
+    this.paginator.pageSize = 100
+    this.paginator.disabled = true
+    this.sortChange$.next({
+      active: '',
+      direction: '',
+    })
+  }
+
+  getTableState() {
+    return {
+      skip: this.paginator.pageIndex * this.paginator.pageSize,
+      limit: this.paginator.pageSize,
+      sort: this.currentSort.active,
+      order: this.currentSort.direction,
+    }
+  }
+
+  private loadMediaItems() {
+    this.loadItems.emit(this.getTableState())
   }
 
   private setMediaFormArray(data: MediaItemModel[]) {

@@ -10,6 +10,7 @@ import { Media } from './media.actions'
 export interface MediaModel {
   items?: MediaItemModel[]
   total: number
+  searchMode: boolean
 }
 
 @State<MediaModel>({
@@ -17,6 +18,7 @@ export interface MediaModel {
   defaults: {
     items: undefined,
     total: 0,
+    searchMode: false,
   },
 })
 @Injectable()
@@ -38,16 +40,26 @@ export class MediaState {
     return state.total
   }
 
+  @Selector([MediaState])
+  static getIsSearchMode(state: MediaModel) {
+    return state.searchMode
+  }
+
   @Action(Media.LoadMediaItems)
-  loadMediaItems({ setState }: StateContext<MediaModel>, action: Media.LoadMediaItems) {
+  loadMediaItems({ setState }: StateContext<MediaModel>, { options }: Media.LoadMediaItems) {
     const params: Record<string, string | number> = {
-      limit: action.limit,
+      limit: options.limit,
     }
-    ;(['lastId', 'order', 'sort'] as const).forEach(prop => {
-      if (action[prop]) {
-        params[prop] = action[prop]!
+
+    ;(['limit', 'skip', 'order'] as const).forEach(prop => {
+      if (options[prop]) {
+        params[prop] = options[prop]!
       }
     })
+
+    if (options.order && options.sort) {
+      params['sort'] = options.sort
+    }
 
     return this.httpService.get<Paginated<MediaItemModel>>(this.baseUrl, { params }).pipe(
       tap(data =>
@@ -55,6 +67,7 @@ export class MediaState {
           patch({
             items: data.items,
             total: data.total,
+            searchMode: false,
           })
         )
       )
@@ -83,7 +96,7 @@ export class MediaState {
     return this.httpService.delete(`${this.baseUrl}/${action.id}`)
   }
 
-  @Action(Media.RemoveNotAddedMediaItem)
+  @Action(Media.RemoveDraftItem)
   removeNotAddedMediaItem({ setState }: StateContext<MediaModel>) {
     return setState(
       patch({
@@ -118,5 +131,27 @@ export class MediaState {
     return this.httpService.post<{ ids: MediaItemModel['id'][] }>(`${this.baseUrl}/merge`, {
       ids: action.selectedIds,
     })
+  }
+
+  @Action(Media.Search)
+  searchMediaItem({ setState }: StateContext<MediaModel>, action: Media.Search) {
+    return this.httpService
+      .get<Paginated<MediaItemModel>>(`${this.baseUrl}`, {
+        params: {
+          q: action.query,
+          limit: action.limit,
+        },
+      })
+      .pipe(
+        tap(data =>
+          setState(
+            patch({
+              items: data.items,
+              total: data.total,
+              searchMode: true,
+            })
+          )
+        )
+      )
   }
 }
