@@ -23,7 +23,7 @@ import { MediaItemModel, MediaStatus } from '@dashboard/media/store/media-item.m
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
 import { PushPipe } from '@rx-angular/template/push'
-import { BehaviorSubject, Observable, merge, of, switchMap, tap, withLatestFrom } from 'rxjs'
+import { BehaviorSubject, Observable, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs'
 @Component({
   selector: 'oxa-media-table',
   standalone: true,
@@ -113,9 +113,10 @@ export class MediaTableComponent implements AfterViewInit {
           this.loadMediaItems()
         }
       }),
-      switchMap(([_, searchMode]) => {
+      switchMap(() => {
         return this.items$.pipe(
-          tap(data => {
+          withLatestFrom(this.searchMode$),
+          tap(([data, searchMode]) => {
             if (!searchMode && this.paginator.disabled) {
               this.paginator.pageSize = 25
               this.paginator.disabled = false
@@ -123,7 +124,8 @@ export class MediaTableComponent implements AfterViewInit {
             this.dataSource = new MatTableDataSource(data)
             this.selection.clear()
             this.setMediaFormArray(data)
-          })
+          }),
+          map(([data, _]) => data)
         )
       })
     )
