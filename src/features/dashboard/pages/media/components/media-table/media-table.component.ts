@@ -6,7 +6,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
+  TemplateRef,
   ViewChild,
 } from '@angular/core'
 import { FormArray, FormBuilder, ReactiveFormsModule } from '@angular/forms'
@@ -19,11 +22,29 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
 import { MatSelectModule } from '@angular/material/select'
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort'
 import { MatTableDataSource, MatTableModule } from '@angular/material/table'
-import { MediaItemModel, MediaStatus } from '@dashboard/media/store/media-item.model'
+import { RxFor } from '@rx-angular/template/for'
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
 import { PushPipe } from '@rx-angular/template/push'
 import { BehaviorSubject, Observable, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs'
+
+const ejectEditable = <T>(editableProps: (keyof T)[], item: T | Partial<T>) => {
+  return editableProps.reduce((acc, prop) => ({ ...acc, ...{ [prop]: item[prop as keyof T] } }), {})
+}
+
+export type ColumnConfig<T> = Record<
+  keyof T,
+  {
+    editable: boolean
+    cellType: 'checkbox' | 'dropdown' | 'input' | 'date' | 'string'
+    headerCellType: 'checkbox' | 'string'
+    headerName?: string
+    sortable: boolean
+    data?: any
+    template?: TemplateRef<T>
+  }
+>
+
 @Component({
   selector: 'oxa-media-table',
   standalone: true,
@@ -43,37 +64,44 @@ import { BehaviorSubject, Observable, map, merge, of, switchMap, tap, withLatest
     PushPipe,
     RxIf,
     LetDirective,
+    RxFor,
   ],
   templateUrl: './media-table.component.html',
   styleUrls: ['./media-table.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MediaTableComponent implements AfterViewInit {
-  mediaItems$: Observable<MediaItemModel[]>
-
-  displayedColumns = ['select', 'id', 'name', 'status', 'createdBy', 'lastUpdated', 'actions']
+export class MediaTableComponent<T extends { id: string }> implements AfterViewInit, OnChanges {
+  paginatedItems$: Observable<T[]>
 
   editingIdx?: string | null
 
-  dataSource = new MatTableDataSource<MediaItemModel>()
+  dataSource = new MatTableDataSource<T>()
 
-  selection = new SelectionModel<MediaItemModel>(true, [])
-
-  mediaStatuses = Object.values(MediaStatus)
+  selection = new SelectionModel<T>(true, [])
 
   pageSizes = [5, 10, 25, 50, 100]
 
-  mediaForm = this.fb.group({
-    media: this.fb.array<MediaItemModel>([]),
+  tableForm = this.fb.group({
+    items: this.fb.array<T>([]),
   })
 
-  @Input('items') items$: Observable<MediaItemModel[]>
+  displayedColumns: string[] = []
+
+  dataColumns: (keyof T)[] = []
+
+  editableProps: (keyof T)[]
+
+  @Input('items') items$: Observable<T[]>
 
   @Input('total') total$: Observable<number>
 
   @Input('searchMode') searchMode$: Observable<boolean>
 
   @Input('loading') isLoading$: Observable<unknown>
+
+  @Input() columnConfig: ColumnConfig<T>
+
+  @Input() selectable = false
 
   @ViewChild('paginator') paginator: MatPaginator
 
@@ -88,9 +116,9 @@ export class MediaTableComponent implements AfterViewInit {
     order?: 'asc' | 'desc' | ''
   }>()
 
-  @Output() saveItem = new EventEmitter<MediaItemModel>()
+  @Output() saveItem = new EventEmitter<T>()
 
-  @Output() removeItem = new EventEmitter<MediaItemModel['id']>()
+  @Output() removeItem = new EventEmitter<T['id']>()
 
   @Output() cancelItem = new EventEmitter<void>()
 
@@ -105,12 +133,27 @@ export class MediaTableComponent implements AfterViewInit {
 
   constructor(private fb: FormBuilder) {}
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes?.['columnConfig']?.currentValue) {
+      this.dataColumns = Object.keys(this.columnConfig) as (keyof T)[]
+      this.editableProps = Object.entries(this.columnConfig).reduce(
+        (acc, [key, value]) => (value.editable ? [...acc, key as keyof T] : acc),
+        [] as (keyof T)[]
+      )
+    }
+    if (changes?.['selectable']?.currentValue) {
+      this.displayedColumns = ['select', ...(this.dataColumns as string[]), 'actions']
+    } else {
+      this.displayedColumns = [...(this.dataColumns as string[]), 'actions']
+    }
+  }
+
   ngAfterViewInit(): void {
-    this.mediaItems$ = merge(this.paginator.page, this.sortChange$).pipe(
+    this.paginatedItems$ = merge(this.paginator.page, this.sortChange$).pipe(
       withLatestFrom(this.searchMode$),
       tap(([_, searchMode]) => {
         if (!searchMode) {
-          this.loadMediaItems()
+          this.loadTableItems()
         }
       }),
       switchMap(() => {
@@ -123,7 +166,7 @@ export class MediaTableComponent implements AfterViewInit {
             }
             this.dataSource = new MatTableDataSource(data)
             this.selection.clear()
-            this.setMediaFormArray(data)
+            this.setControlsArray(data)
           }),
           map(([data, _]) => data)
         )
@@ -132,16 +175,16 @@ export class MediaTableComponent implements AfterViewInit {
   }
 
   itemAction() {
-    this.loadMediaItems()
+    this.loadTableItems()
   }
 
-  trackMedia(_: number, item: MediaItemModel) {
+  trackItemsFn(_: number, item: T) {
     return item.id
   }
 
   onRowEdit(id: string, isEditing: boolean) {
     this.selection.clear()
-    const item = this.mediaForm.controls.media.getRawValue().find(x => x?.id === id)
+    const item = this.tableForm.controls.items.getRawValue().find(x => x?.id === id)
 
     if (isEditing && item && !this.checkIfChanged(item, id)) {
       this.saveItem.emit(item)
@@ -149,11 +192,11 @@ export class MediaTableComponent implements AfterViewInit {
     this.editingIdx = isEditing ? null : item?.id
   }
 
-  onRowRemove(id: MediaItemModel['id']) {
+  onRowRemove(id: T['id']) {
     this.removeItem.emit(id)
   }
 
-  onRowCancel(id: MediaItemModel['id']) {
+  onRowCancel(id: T['id']) {
     this.editingIdx = null
     if (id === 'null') {
       return this.cancelItem.emit()
@@ -203,41 +246,36 @@ export class MediaTableComponent implements AfterViewInit {
     }
   }
 
-  private loadMediaItems() {
+  private loadTableItems() {
     this.loadItems.emit(this.getTableState())
   }
 
-  private setMediaFormArray(data: MediaItemModel[]) {
-    const mediaArray = this.mediaForm.controls.media as FormArray
+  private setControlsArray(data: T[]) {
+    const controlsArray = this.tableForm.controls.items as FormArray
 
     data?.forEach((item, idx) => {
-      mediaArray.setControl(idx, this.setMediaGroup(item), { emitEvent: false })
+      controlsArray.setControl(idx, this.setControlsGroup(item), { emitEvent: false })
     })
   }
 
-  private setMediaGroup({ id, name, status }: MediaItemModel | Partial<MediaItemModel>) {
-    return this.fb.group<Partial<MediaItemModel>>({
-      id,
-      name,
-      status,
-    })
+  private setControlsGroup(item: T | Partial<T>) {
+    const fieldsToSet = ejectEditable(this.editableProps, item)
+    return this.fb.group<Partial<T>>(fieldsToSet)
   }
 
-  private resetControl(id: MediaItemModel['id']) {
-    const controlToReset = this.mediaForm.controls.media.controls.find(control => control.get('id')?.value === id)
+  private resetControl(id: T['id']) {
+    const controlToReset = this.tableForm.controls.items.controls.find(control => control.get('id')?.value === id)
     const dataToReset = this.dataSource.data.find(x => x.id === id)
     if (dataToReset) {
-      return controlToReset?.setValue(
-        { id: dataToReset.id, name: dataToReset.name, status: dataToReset.status } as unknown as MediaItemModel,
-        {
-          emitEvent: false,
-        }
-      )
+      const fieldsToSet = ejectEditable(this.editableProps, dataToReset)
+      return controlToReset?.setValue(fieldsToSet, {
+        emitEvent: false,
+      })
     }
   }
 
-  private checkIfChanged(newItem: MediaItemModel, id: string) {
+  private checkIfChanged(newItem: T, id: string) {
     const oldItem = this.dataSource.data.find(x => x.id === id)
-    return (['name', 'status'] as const).every((prop: keyof MediaItemModel) => oldItem?.[prop] === newItem[prop])
+    return this.editableProps.every(prop => oldItem?.[prop as keyof T] === newItem[prop as keyof T])
   }
 }

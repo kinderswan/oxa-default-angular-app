@@ -6,14 +6,14 @@ import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
-import { MediaItemModel } from '@dashboard/media/store/media-item.model'
+import { MediaItemModel, MediaStatus } from '@dashboard/media/store/media-item.model'
 import { Media } from '@dashboard/media/store/media.actions'
 import { MediaState } from '@dashboard/media/store/media.state'
 import { Actions, Select, Store, ofActionDispatched, ofActionSuccessful } from '@ngxs/store'
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
 import { Observable, debounceTime } from 'rxjs'
-import { MediaTableComponent } from '../media-table/media-table.component'
+import { ColumnConfig, MediaTableComponent } from '../media-table/media-table.component'
 
 @Component({
   selector: 'oxa-media-wrapper',
@@ -40,11 +40,56 @@ export class MediaWrapperComponent {
 
   @Select(MediaState.getIsSearchMode) searchMode$: Observable<boolean>
 
-  @ViewChild(MediaTableComponent, { static: true }) tableComponent: MediaTableComponent
+  @ViewChild(MediaTableComponent, { static: true }) tableComponent: MediaTableComponent<MediaItemModel>
 
   selectedItems: MediaItemModel[] = []
 
   searchControl = new FormControl()
+
+  columnsConfig: ColumnConfig<MediaItemModel> = {
+    id: {
+      editable: true,
+      cellType: 'string',
+      headerCellType: 'string',
+      headerName: 'Id',
+      sortable: true,
+    },
+    name: {
+      editable: true,
+      cellType: 'input',
+      headerCellType: 'string',
+      headerName: 'Name',
+      sortable: true,
+    },
+    status: {
+      editable: true,
+      cellType: 'dropdown',
+      headerCellType: 'string',
+      headerName: 'Status',
+      sortable: true,
+      data: Object.values(MediaStatus),
+    },
+    createdBy: {
+      editable: false,
+      cellType: 'string',
+      headerCellType: 'string',
+      headerName: 'Created By',
+      sortable: true,
+    },
+    lastUpdated: {
+      editable: false,
+      cellType: 'date',
+      headerCellType: 'string',
+      headerName: 'Last Updated',
+      sortable: true,
+    },
+  }
+
+  editableProps = {
+    id: '',
+    name: 'input',
+    status: 'select',
+  } as Record<keyof MediaItemModel, string>
 
   isLoading$ = this.actions.pipe(
     ofActionDispatched(

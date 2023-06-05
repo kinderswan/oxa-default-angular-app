@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http'
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
 import { APP_INITIALIZER, NgModule } from '@angular/core'
 import { BrowserModule } from '@angular/platform-browser'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
@@ -16,6 +16,7 @@ import { SharedState } from '@shared/store/shared.state'
 import { AppComponent } from './app.component'
 import { UserInitComponent } from '@core/auth/user-init.component'
 import { RxIf } from '@rx-angular/template/if'
+import { JwtInterceptor } from '@core/auth/jwt.interceptor'
 
 @NgModule({
   declarations: [AppComponent],
@@ -48,6 +49,11 @@ import { RxIf } from '@rx-angular/template/if'
         store.dispatch(new Core.LoadAppConfig())
       },
       deps: [Store],
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
       multi: true,
     },
   ],

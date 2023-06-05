@@ -17,8 +17,11 @@
   [total]="total$"
   [searchMode]="searchMode$"
   [loading]="isLoading$"
+  [columnConfig]="columnsConfig"
+  [selectable]="true"
   (selectionChange)="onSelectionChange($event)"
   (loadItems)="onLoadItems($event)"
   (saveItem)="onSaveItem($event)"
   (removeItem)="onRemoveItem($event)"
-  (cancelItem)="onCancelItem()"></oxa-media-table>
+  (cancelItem)="onCancelItem()">
+</oxa-media-table>
