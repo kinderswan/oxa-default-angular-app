@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 
-import { MediaTableComponent } from './media-table.component'
+import { FormTableComponent } from './form-table.component'
 
 describe('MediaListComponent', () => {
-  let component: MediaTableComponent
-  let fixture: ComponentFixture<MediaTableComponent>
+  let component: FormTableComponent<any>
+  let fixture: ComponentFixture<FormTableComponent<any>>
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [MediaTableComponent],
+      imports: [FormTableComponent],
     })
-    fixture = TestBed.createComponent(MediaTableComponent)
+    fixture = TestBed.createComponent(FormTableComponent)
     component = fixture.componentInstance
     fixture.detectChanges()
   })

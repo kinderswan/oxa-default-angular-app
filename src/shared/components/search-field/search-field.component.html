@@ -1,0 +1,5 @@
+<mat-form-field appearance="outline" class="search-field">
+  <mat-icon matPrefix>search</mat-icon>
+  <input matInput [formControl]="searchControl" placeholder="Search" />
+  <mat-icon matSuffix *rxIf="searchControl.value" (click)="searchControl.setValue('')">close</mat-icon>
+</mat-form-field>

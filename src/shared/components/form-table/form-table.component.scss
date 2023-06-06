@@ -7,7 +7,7 @@
     vertical-align: middle;
     margin: 8px 0px;
   }
-  .mat-column-actions > div {
+  ::ng-deep .mat-column-actions > div {
     display: flex;
     gap: 4px
   }

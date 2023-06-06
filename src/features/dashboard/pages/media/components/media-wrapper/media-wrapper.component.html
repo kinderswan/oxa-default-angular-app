@@ -1,9 +1,5 @@
 <div class="title-divider">
-  <mat-form-field appearance="outline" class="search-field">
-    <mat-icon matPrefix>search</mat-icon>
-    <input matInput [formControl]="searchControl" placeholder="Search" />
-    <mat-icon matSuffix *rxIf="searchControl.value" (click)="searchControl.setValue('')">close</mat-icon>
-  </mat-form-field>
+  <oxa-search-field (valueChanges)="onSearchChange($event)"></oxa-search-field>
   <div class="buttons-wrapper">
     <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
     <button mat-raised-button color="accent" (click)="mergeItems()" [disabled]="selectedItems.length < 2">
@@ -12,16 +8,42 @@
   </div>
 </div>
 
-<oxa-media-table
-  [items]="items$"
+<oxa-form-table
+  [items]="tableItems$"
   [total]="total$"
   [searchMode]="searchMode$"
   [loading]="isLoading$"
   [columnConfig]="columnsConfig"
-  [selectable]="true"
+  [selectionConfig]="selectionConfig"
+  [actionTemplate]="actionTemplate"
+  [tableForm]="tableForm"
+  [allowEditFn]="allowEditFn"
   (selectionChange)="onSelectionChange($event)"
-  (loadItems)="onLoadItems($event)"
-  (saveItem)="onSaveItem($event)"
-  (removeItem)="onRemoveItem($event)"
-  (cancelItem)="onCancelItem()">
-</oxa-media-table>
+  (tableStateChange)="loadTableData($event)">
+  <ng-template #actionTemplate let-item>
+    <div>
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="onRowEdit(item.id, currentRow === item.id || item.id === 'null')">
+        {{ currentRow === item.id || item.id === 'null' ? 'Save' : 'Edit' }}
+      </button>
+
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="onRowCancel(item.id)"
+        *rxIf="currentRow === item.id || item.id === 'null'">
+        Cancel
+      </button>
+
+      <button
+        mat-stroked-button
+        *rxIf="!(currentRow === item.id || item.id === 'null')"
+        type="button"
+        (click)="onRowRemove(item.id)">
+        Remove
+      </button>
+    </div>
+  </ng-template>
+</oxa-form-table>

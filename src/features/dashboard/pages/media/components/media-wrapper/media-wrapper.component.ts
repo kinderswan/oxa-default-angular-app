@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { FormControl, ReactiveFormsModule } from '@angular/forms'
+import { FormArray, FormBuilder, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatIconModule } from '@angular/material/icon'
@@ -12,8 +12,15 @@ import { MediaState } from '@dashboard/media/store/media.state'
 import { Actions, Select, Store, ofActionDispatched, ofActionSuccessful } from '@ngxs/store'
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
-import { Observable, debounceTime } from 'rxjs'
-import { ColumnConfig, MediaTableComponent } from '../media-table/media-table.component'
+import {
+  BaseFormTable,
+  ColumnConfig,
+  FormTableComponent,
+  FormTableSelectionConfig,
+  FormTableState,
+} from '@shared/components/form-table/form-table.component'
+import { SearchFieldComponent } from '@shared/components/search-field/search-field.component'
+import { Observable, tap } from 'rxjs'
 
 @Component({
   selector: 'oxa-media-wrapper',
@@ -22,12 +29,13 @@ import { ColumnConfig, MediaTableComponent } from '../media-table/media-table.co
     CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MediaTableComponent,
+    FormTableComponent,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
     RxIf,
     LetDirective,
+    SearchFieldComponent,
   ],
   templateUrl: './media-wrapper.component.html',
   styleUrls: ['./media-wrapper.component.scss'],
@@ -40,11 +48,11 @@ export class MediaWrapperComponent {
 
   @Select(MediaState.getIsSearchMode) searchMode$: Observable<boolean>
 
-  @ViewChild(MediaTableComponent, { static: true }) tableComponent: MediaTableComponent<MediaItemModel>
+  @ViewChild(FormTableComponent, { static: true }) tableComponent: BaseFormTable<MediaItemModel>
+
+  @ViewChild(SearchFieldComponent, { static: true }) searchField: SearchFieldComponent
 
   selectedItems: MediaItemModel[] = []
-
-  searchControl = new FormControl()
 
   columnsConfig: ColumnConfig<MediaItemModel> = {
     id: {
@@ -85,12 +93,6 @@ export class MediaWrapperComponent {
     },
   }
 
-  editableProps = {
-    id: '',
-    name: 'input',
-    status: 'select',
-  } as Record<keyof MediaItemModel, string>
-
   isLoading$ = this.actions.pipe(
     ofActionDispatched(
       Media.MergeMediaItems,
@@ -101,34 +103,53 @@ export class MediaWrapperComponent {
     )
   )
 
-  constructor(private store: Store, private actions: Actions) {
-    this.searchControl.valueChanges.pipe(debounceTime(700), takeUntilDestroyed()).subscribe(value => {
-      if (value) {
-        this.store.dispatch(new Media.Search(value))
-      } else {
-        this.store.dispatch(
-          new Media.LoadMediaItems({
-            skip: 0,
-            limit: 25,
-          })
-        )
-      }
-    })
+  tableForm = this.fb.group({
+    items: this.fb.array<MediaItemModel>([]),
+  })
+
+  currentRow: string | null | undefined
+
+  selectionConfig: FormTableSelectionConfig = {
+    active: false,
+    isDisabledFn: () => !!this.currentRow,
+  }
+
+  tableItems$: Observable<MediaItemModel[]>
+
+  allowEditFn = (id?: MediaItemModel['id']) => this.currentRow === id || id === 'null'
+
+  private rawItems: MediaItemModel[]
+
+  constructor(private store: Store, private actions: Actions, private fb: FormBuilder) {
+    this.tableItems$ = this.items$.pipe(
+      tap(data => {
+        this.rawItems = data && [...data]
+        if (this.tableForm) {
+          this.setControlsArray(data)
+        }
+      })
+    )
 
     this.actions.pipe(ofActionSuccessful(Media.LoadMediaItems), takeUntilDestroyed()).subscribe(() => {
-      this.searchControl.setValue('', { emitEvent: false })
+      this.searchField.reset()
     })
 
     this.actions
       .pipe(ofActionSuccessful(Media.SaveMediaItem, Media.RemoveMediaItem, Media.MergeMediaItems), takeUntilDestroyed())
-      .subscribe(() => this.onLoadItems(this.tableComponent.getTableState()))
+      .subscribe(() => this.loadTableData(this.tableComponent.tableState))
 
     this.actions
       .pipe(ofActionSuccessful(Media.AddMediaItem), takeUntilDestroyed())
-      .subscribe(() => this.tableComponent.resetEditingIndex())
+      .subscribe(() => (this.currentRow = 'null'))
 
     this.actions.pipe(ofActionSuccessful(Media.Search), takeUntilDestroyed()).subscribe(() => {
-      this.tableComponent.resetTableState()
+      this.tableComponent.tableState = {
+        pageDisabled: true,
+        pageIndex: 0,
+        pageSize: 100,
+        sortActive: '',
+        sortDirection: '',
+      }
     })
   }
 
@@ -144,23 +165,97 @@ export class MediaWrapperComponent {
     this.selectedItems = $event
   }
 
-  onLoadItems($event: { skip: number; limit: number; sort?: string; order?: 'asc' | 'desc' | '' }) {
-    if (this.searchControl.value) {
-      this.store.dispatch(new Media.Search(this.searchControl.value))
+  loadTableData($event: FormTableState) {
+    if (this.searchField.value) {
+      this.store.dispatch(new Media.Search(this.searchField.value))
     } else {
-      this.store.dispatch(new Media.LoadMediaItems({ ...$event }))
+      const paginationConfig = {
+        skip: $event.pageIndex * $event.pageSize,
+        limit: $event.pageSize,
+        sort: $event.sortActive,
+        order: $event.sortDirection,
+      }
+      this.store.dispatch(new Media.LoadMediaItems(paginationConfig))
     }
-  }
-
-  onSaveItem($event: MediaItemModel) {
-    this.store.dispatch(new Media.SaveMediaItem($event))
   }
 
   onRemoveItem(id: string) {
     this.store.dispatch(new Media.RemoveMediaItem(id))
   }
 
-  onCancelItem() {
-    this.store.dispatch(new Media.RemoveDraftItem())
+  onRowEdit(id: string, isEditing: boolean) {
+    this.tableComponent.selection.clear()
+    const item = this.tableForm.controls.items.getRawValue().find(x => x?.id === id)
+
+    if (isEditing && item && !this.checkIfChanged(item, id)) {
+      this.store.dispatch(new Media.SaveMediaItem(item))
+    }
+    this.currentRow = isEditing ? null : item?.id
+  }
+
+  onRowRemove(id: MediaItemModel['id']) {
+    this.store.dispatch(new Media.RemoveMediaItem(id))
+  }
+
+  onRowCancel(id: MediaItemModel['id']) {
+    this.currentRow = null
+    if (id === 'null') {
+      return this.store.dispatch(new Media.RemoveDraftItem())
+    }
+    return this.resetControl(id)
+  }
+
+  onSearchChange($event: string) {
+    if ($event) {
+      this.store.dispatch(new Media.Search($event))
+    } else {
+      this.store.dispatch(
+        new Media.LoadMediaItems({
+          skip: 0,
+          limit: 25,
+        })
+      )
+    }
+  }
+
+  private resetControl(id: MediaItemModel['id']) {
+    const controlToReset = this.tableForm.controls.items.controls.find(control => control.get('id')?.value === id)
+    const dataToReset = this.rawItems.find(x => x.id === id)
+    if (dataToReset) {
+      return controlToReset?.setValue(
+        {
+          id: dataToReset['id'],
+          name: dataToReset['name'],
+          status: dataToReset['status'],
+        } as any,
+        {
+          emitEvent: false,
+        }
+      )
+    }
+  }
+
+  private checkIfChanged(newItem: MediaItemModel, id: string) {
+    const oldItem = this.rawItems.find(x => x.id === id)
+    return ['name', 'status'].every(
+      prop => oldItem?.[prop as keyof MediaItemModel] === newItem[prop as keyof MediaItemModel]
+    )
+  }
+
+  private setControlsArray(data: MediaItemModel[]) {
+    const controlsArray = this.tableForm.controls.items as FormArray
+
+    data?.forEach((item, idx) => {
+      controlsArray.setControl(idx, this.setControlsGroup(item), { emitEvent: false })
+    })
+  }
+
+  private setControlsGroup(item: MediaItemModel | Partial<MediaItemModel>) {
+    const fieldsToSet = Object.entries(this.columnsConfig).reduce(
+      (acc, [key, value]) => (value.editable ? { ...acc, [key]: item[key as keyof MediaItemModel] } : acc),
+      {} as { [P in keyof MediaItemModel]: MediaItemModel[P] }
+    )
+
+    return this.fb.group<Partial<MediaItemModel>>(fieldsToSet)
   }
 }

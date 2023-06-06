@@ -1,0 +1,123 @@
+<form [formGroup]="tableForm" class="mat-elevation-z1">
+  <ng-container *rxLet="tableData$; let tableData; suspense: suspense; suspenseTrigger: isLoading$; parent: true">
+    <table
+      mat-table
+      matSort
+      [matSortActive]="this.currentSort.active"
+      [matSortDirection]="this.currentSort.direction"
+      (matSortChange)="onSortChange($event)"
+      formArrayName="items"
+      [dataSource]="dataSource"
+      [trackBy]="trackItemsFn">
+      <ng-container *rxIf="selectionConfig; strategy: 'native'" matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox
+            (change)="$event ? toggleAllRows() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()"
+            [disabled]="selectionConfig.isDisabledFn() || !tableData?.items?.length">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)"
+            [disabled]="selectionConfig.isDisabledFn()">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <ng-container *rxFor="let column of dataColumns; strategy: 'native'">
+        <ng-container [matColumnDef]="$any(column)">
+          <th
+            mat-header-cell
+            *matHeaderCellDef
+            [mat-sort-header]="columnConfig[column].sortable ? $any(column) : ''"
+            [disabled]="tableData.searchMode">
+            {{ columnConfig[column].headerName }}
+          </th>
+          <td mat-cell *matCellDef="let item; let rowIndex = index">
+            <ng-container [ngSwitch]="$any(columnConfig)[column]?.cellType">
+              <ng-container *ngSwitchCase="'string'">{{ item[column] }}</ng-container>
+              <ng-container *ngSwitchCase="'date'">{{ item[column] | date : 'MM.dd.yyyy hh:mm a' }}</ng-container>
+              <ng-container *ngSwitchCase="'input'">
+                <div>
+                  <ng-container *rxIf="allowEditFn?.(item.id); else show">
+                    <ng-container
+                      [ngTemplateOutlet]="inputCell"
+                      [ngTemplateOutletContext]="{
+                        column: column,
+                        formGroup: tableForm.controls.items.at(rowIndex)
+                      }">
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </ng-container>
+              <ng-container *ngSwitchCase="'dropdown'">
+                <div>
+                  <ng-container *rxIf="allowEditFn?.(item.id); else show">
+                    <ng-container
+                      [ngTemplateOutlet]="dropdownCell"
+                      [ngTemplateOutletContext]="{
+                        column: column,
+                        formGroup: tableForm.controls.items.at(rowIndex)
+                      }">
+                    </ng-container>
+                  </ng-container>
+                </div>
+              </ng-container>
+              <ng-template #show>
+                {{ item[column] }}
+              </ng-template>
+            </ng-container>
+          </td>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *rxIf="!!actionTemplate; strategy: 'native'" matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let item; let rowIndex = index">
+          <ng-container
+            [ngTemplateOutlet]="actionTemplate"
+            [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+        </td>
+      </ng-container>
+      <ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell-no-data" colspan="4">No data found</td>
+        </tr>
+      </ng-container>
+    </table>
+  </ng-container>
+</form>
+<mat-paginator
+  class="mat-elevation-z1"
+  #paginator
+  [length]="total$ | push"
+  [pageSizeOptions]="pageSizes"
+  [pageSize]="25"></mat-paginator>
+
+<ng-template #suspense>
+  <div class="spinner-wrapper">
+    <mat-spinner [diameter]="64"></mat-spinner>
+  </div>
+</ng-template>
+
+<ng-template #inputCell let-column="column" let-formGroup="formGroup">
+  <mat-form-field appearance="outline" [formGroup]="formGroup">
+    <input matNativeControl type="text" size="2" [formControlName]="$any(column)" />
+  </mat-form-field>
+</ng-template>
+
+<ng-template #dropdownCell let-column="column" let-formGroup="formGroup">
+  <mat-form-field appearance="outline" [formGroup]="formGroup">
+    <mat-select [formControlName]="$any(column)">
+      <mat-option *ngFor="let status of $any(columnConfig)[column].data" [value]="status">
+        {{ status }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</ng-template>
