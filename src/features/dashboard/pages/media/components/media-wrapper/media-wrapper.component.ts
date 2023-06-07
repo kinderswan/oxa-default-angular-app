@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormArray, FormBuilder, ReactiveFormsModule } from '@angular/forms'
@@ -25,18 +24,7 @@ import { Observable, tap } from 'rxjs'
 @Component({
   selector: 'oxa-media-wrapper',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    FormTableComponent,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    RxIf,
-    LetDirective,
-    SearchFieldComponent,
-  ],
+  imports: [ReactiveFormsModule, MatButtonModule, FormTableComponent, RxIf, LetDirective, SearchFieldComponent],
   templateUrl: './media-wrapper.component.html',
   styleUrls: ['./media-wrapper.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -110,7 +98,7 @@ export class MediaWrapperComponent {
   currentRow: string | null | undefined
 
   selectionConfig: FormTableSelectionConfig = {
-    active: false,
+    active: true,
     isDisabledFn: () => !!this.currentRow,
   }
 

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common'
 import { NgModule, importProvidersFrom } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule } from '@angular/material/card'
@@ -15,7 +14,6 @@ import { ProfileActionsComponent } from './components/profile-actions/profile-ac
   declarations: [ProfileContainerComponent],
   imports: [
     RouterModule.forChild([{ path: '', component: ProfileContainerComponent }]),
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatDividerModule,

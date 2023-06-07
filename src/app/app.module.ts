@@ -1,28 +1,27 @@
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http'
 import { APP_INITIALIZER, NgModule } from '@angular/core'
 import { BrowserModule } from '@angular/platform-browser'
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 import { NgxsModule, NoopNgxsExecutionStrategy, Store } from '@ngxs/store'
 
 import { AppRoutingModule } from './app-routing.module'
 
+import { provideAnimations } from '@angular/platform-browser/animations'
 import { AmplifyAuthenticatorModule } from '@aws-amplify/ui-angular'
 import { CognitoService } from '@core/auth/cognito.service'
+import { JwtInterceptor } from '@core/auth/jwt.interceptor'
+import { UserInitComponent } from '@core/auth/user-init.component'
 import { EnvironmentLoaderService } from '@core/env/env-loader.service'
 import { Core } from '@core/store/core.actions'
 import { CoreState } from '@core/store/core.state'
 import { environment } from '@oxa/environments/environment'
+import { RxIf } from '@rx-angular/template/if'
 import { SharedState } from '@shared/store/shared.state'
 import { AppComponent } from './app.component'
-import { UserInitComponent } from '@core/auth/user-init.component'
-import { RxIf } from '@rx-angular/template/if'
-import { JwtInterceptor } from '@core/auth/jwt.interceptor'
 
 @NgModule({
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    BrowserAnimationsModule,
     AppRoutingModule,
     NgxsModule.forRoot([CoreState, SharedState], {
       executionStrategy: NoopNgxsExecutionStrategy,
@@ -56,6 +55,7 @@ import { JwtInterceptor } from '@core/auth/jwt.interceptor'
       useClass: JwtInterceptor,
       multi: true,
     },
+    provideAnimations(),
   ],
   bootstrap: [AppComponent],
 })

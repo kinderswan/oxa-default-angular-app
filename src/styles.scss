@@ -2,7 +2,7 @@
 @use './styles/theme' as theme;
 @use './styles/variables' as variables;
 
-@import '~@aws-amplify/ui-angular/theme.css';
+@import '../node_modules/@aws-amplify/ui-angular/theme.css';
 
 :root {
   height: 100%;
@@ -29,5 +29,4 @@
   .mat-form-field-appearance-outline {
     background-color: white;
   }
-
 }

@@ -16,7 +16,7 @@
       "prefix": "oxa",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:browser-esbuild",
           "options": {
             "outputPath": "dist/oxa",
             "index": "src/index.html",
@@ -26,22 +26,56 @@
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets", "src/assets/config", "src/assets/config/app-config.json"],
             "styles": ["src/styles.scss"],
-            "scripts": []
+            "allowedCommonJsDependencies": [
+              "@aws-crypto/crc32",
+              "@aws-crypto/ie11-detection",
+              "@aws-crypto/sha256-browser",
+              "@aws-crypto/sha256-js",
+              "@aws-crypto/supports-web-crypto",
+              "@aws-crypto/util",
+              "axios",
+              "base64-js",
+              "bowser",
+              "buffer",
+              "camelcase",
+              "camelcase-keys",
+              "classnames",
+              "cookie",
+              "crypto",
+              "dijkstrajs",
+              "encode-utf8",
+              "events",
+              "fast-xml-parser",
+              "ieee754",
+              "isarray",
+              "isomorphic-unfetch",
+              "js-cookie",
+              "lodash/flatten",
+              "lodash/get.js",
+              "lodash/isEmpty",
+              "lodash/isEqual",
+              "lodash/kebabCase.js",
+              "lodash/merge.js",
+              "lodash/noop",
+              "lodash/pickBy.js",
+              "map-obj",
+              "punycode",
+              "qrcode",
+              "querystring",
+              "quick-lru",
+              "strnum",
+              "style-dictionary/lib/utils/deepExtend.js",
+              "style-dictionary/lib/utils/flattenProperties.js",
+              "style-dictionary/lib/utils/references/usesReference.js",
+              "url",
+              "uuid",
+              "xstate/lib/waitFor.js",
+              "zen-observable",
+              "zen-push"
+            ]
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "10mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "40kb"
-                }
-              ],
               "outputHashing": "all"
             },
             "development": {
@@ -87,7 +121,7 @@
             "inlineStyleLanguage": ["scss"],
             "assets": ["src/favicon.ico", "src/assets", "src/assets/config", "src/assets/config/app-config.json"],
             "styles": ["src/styles.scss"],
-            "scripts": [],
+            "scripts": []
           }
         },
         "lint": {

@@ -1,18 +1,16 @@
 import { SelectionModel } from '@angular/cdk/collections'
-import { CommonModule, DatePipe } from '@angular/common'
+import { DatePipe, NgFor, NgSwitch, NgSwitchCase, NgTemplateOutlet } from '@angular/common'
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  InjectionToken,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
-  forwardRef,
 } from '@angular/core'
 import {
   ControlContainer,
@@ -74,7 +72,6 @@ export interface BaseFormTable<T extends { id: string }> {
   selector: 'oxa-form-table',
   standalone: true,
   imports: [
-    CommonModule,
     MatTableModule,
     MatButtonModule,
     ReactiveFormsModule,
@@ -90,6 +87,10 @@ export interface BaseFormTable<T extends { id: string }> {
     RxIf,
     LetDirective,
     RxFor,
+    NgSwitch,
+    NgSwitchCase,
+    NgTemplateOutlet,
+    NgFor,
   ],
   templateUrl: './form-table.component.html',
   styleUrls: ['./form-table.component.scss'],
