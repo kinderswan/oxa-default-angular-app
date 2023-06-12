@@ -34,6 +34,7 @@ import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
 import { PushPipe } from '@rx-angular/template/push'
 import { BehaviorSubject, Observable, filter, map, merge, of, switchMap, tap, withLatestFrom } from 'rxjs'
+import { OxaLazy } from '../lazy/lazy.directive'
 
 export type ColumnConfig<T extends { id: string }> = Record<
   keyof T,

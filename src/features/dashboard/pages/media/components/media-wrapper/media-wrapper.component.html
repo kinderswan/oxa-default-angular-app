@@ -1,5 +1,5 @@
 <div class="title-divider">
-  <oxa-search-field (valueChanges)="onSearchChange($event)"></oxa-search-field>
+  <ng-container mat-stroked-button *lazy="'oxa-search-field'; outputs: searchOutputs"></ng-container>
   <div class="buttons-wrapper">
     <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
     <button mat-raised-button color="accent" (click)="mergeItems()" [disabled]="selectedItems.length < 2">
@@ -8,42 +8,44 @@
   </div>
 </div>
 
-<oxa-form-table
-  [items]="tableItems$"
-  [total]="total$"
-  [searchMode]="searchMode$"
-  [loading]="isLoading$"
-  [columnConfig]="columnsConfig"
-  [selectionConfig]="selectionConfig"
-  [actionTemplate]="actionTemplate"
-  [tableForm]="tableForm"
-  [allowEditFn]="allowEditFn"
-  (selectionChange)="onSelectionChange($event)"
-  (tableStateChange)="loadTableData($event)">
-  <ng-template #actionTemplate let-item>
-    <div>
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="onRowEdit(item.id, currentRow === item.id || item.id === 'null')">
-        {{ currentRow === item.id || item.id === 'null' ? 'Save' : 'Edit' }}
-      </button>
+<ng-container
+  *lazy="'oxa-form-table'; 
+  inputs: {
+    items: tableItems$,
+    total: total$,
+    searchMode: searchMode$,
+    loading: isLoading$,
+    pageSizes: [5, 10, 15],
+    columnConfig: columnsConfig,
+    selectionConfig: selectionConfig,
+    actionTemplate: actionTemplate,
+    tableForm: tableForm,
+    allowEditFn: allowEditFn,
+  };  
+  outputs: tableOutputs;
+  init: initTable;
+">
+</ng-container>
+<ng-template #actionTemplate let-item>
+  <div>
+    <button mat-stroked-button type="button" (click)="onRowEdit(item.id, currentRow === item.id || item.id === 'null')">
+      {{ currentRow === item.id || item.id === 'null' ? 'Save' : 'Edit' }}
+    </button>
 
-      <button
-        mat-stroked-button
-        type="button"
-        (click)="onRowCancel(item.id)"
-        *rxIf="currentRow === item.id || item.id === 'null'">
-        Cancel
-      </button>
+    <button
+      mat-stroked-button
+      type="button"
+      (click)="onRowCancel(item.id)"
+      *rxIf="currentRow === item.id || item.id === 'null'">
+      Cancel
+    </button>
 
-      <button
-        mat-stroked-button
-        *rxIf="!(currentRow === item.id || item.id === 'null')"
-        type="button"
-        (click)="onRowRemove(item.id)">
-        Remove
-      </button>
-    </div>
-  </ng-template>
-</oxa-form-table>
+    <button
+      mat-stroked-button
+      *rxIf="!(currentRow === item.id || item.id === 'null')"
+      type="button"
+      (click)="onRowRemove(item.id)">
+      Remove
+    </button>
+  </div>
+</ng-template>

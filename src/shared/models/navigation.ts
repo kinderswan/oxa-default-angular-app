@@ -6,6 +6,11 @@ export const dashboardNavItems: SidenavItem[] = [
     icon: 'perm_media',
     url: './media',
   },
+  {
+    title: 'Test',
+    icon: 'abc',
+    url: './test',
+  },
 ]
 
 export const settingsNavItems: SidenavItem[] = [

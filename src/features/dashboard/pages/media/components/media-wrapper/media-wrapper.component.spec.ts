@@ -8,7 +8,6 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatInputModule } from '@angular/material/input'
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
-import { FormTableComponent } from '@shared/components/form-table/form-table.component'
 import { SearchFieldComponent } from '@shared/components/search-field/search-field.component'
 import { importProvidersFrom } from '@angular/core'
 import { MediaState } from '@dashboard/media/store/media.state'
@@ -23,7 +22,6 @@ describe('MediaWrapperComponent', () => {
       imports: [
         ReactiveFormsModule,
         MatButtonModule,
-        FormTableComponent,
         MatFormFieldModule,
         MatInputModule,
         MatIconModule,

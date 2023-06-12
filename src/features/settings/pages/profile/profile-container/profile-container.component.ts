@@ -1,14 +1,29 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
 import { Core } from '@core/store/core.actions'
 import { CoreState } from '@core/store/core.state'
 import { Select, Store } from '@ngxs/store'
+import { HeaderComponent } from '@shared/components/header/header.component'
 import { Observable } from 'rxjs'
+import { ProfileActionsComponent } from '../components/profile-actions/profile-actions.component'
+import { ProfileInfoComponent } from '../components/profile-info/profile-info.component'
 
 @Component({
   selector: 'oxa-profile-container',
   templateUrl: './profile-container.component.html',
   styleUrls: ['./profile-container.component.scss'],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    HeaderComponent,
+    ProfileInfoComponent,
+    ProfileActionsComponent,
+  ],
 })
 export class ProfileContainerComponent {
   constructor(private store: Store) {}
