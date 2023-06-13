@@ -14,7 +14,7 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <button mat-icon-button (click)="opened = !opened" class="pull-drawer">
-      <mat-icon>{{ opened ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      <ng-container *lazy="null" component="mat-icon">{{ opened ? 'chevron_left' : 'chevron_right' }}</ng-container>
     </button>
     <ng-content></ng-content>
   </mat-sidenav-content>

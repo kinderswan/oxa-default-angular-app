@@ -1,5 +1,5 @@
 <h1 class="mat-h1">
-  <mat-icon>{{ icon }}</mat-icon
-  >{{ title }}
+  <ng-container *lazy="null" component="mat-icon">{{ icon }}</ng-container>
+  {{ title }}
 </h1>
 <mat-divider></mat-divider>

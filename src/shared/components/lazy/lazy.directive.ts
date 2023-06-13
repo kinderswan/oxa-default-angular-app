@@ -1,4 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @angular-eslint/directive-selector */
+/* eslint-disable @angular-eslint/directive-class-suffix */
+import { NgClass } from '@angular/common'
 import {
+  Attribute,
   ComponentRef,
   Directive,
   DoCheck,
@@ -8,74 +13,82 @@ import {
   KeyValueDiffer,
   KeyValueDiffers,
   NgModuleRef,
-  OnInit,
+  Renderer2,
   TemplateRef,
   Type,
   ViewContainerRef,
   createNgModule,
-  Attribute,
 } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
-import { Observable, ReplaySubject, distinctUntilChanged, from, map, switchMap, tap } from 'rxjs'
+import { Observable, from, map } from 'rxjs'
 import { LazyService } from './lazy.service'
 
+export type LazyConfig<T> = {
+  inputs?: { [key in keyof T]?: T[key] }
+  outputs?: OutputsType<T>
+  class?: NgClass['ngClass']
+  injector?: Injector
+  ngModule?: Type<unknown>
+  init?: (cmp: T) => void
+}
+
+type Unpack<T> = T extends Observable<infer U> ? U : never
+
+type Outputs<T> = {
+  [key in keyof T as T[key] extends Observable<unknown> ? key : never]?: (value: Unpack<T[key]>) => void
+}
+
+export type OutputsType<T> = {
+  [key in keyof Outputs<T>]: Outputs<T>[key]
+} & {}
+
 @Directive({ selector: '[lazy]', standalone: true })
-export class OxaLazy<T extends object> implements OnInit, DoCheck {
-  @Input('lazy') loadName: string
+export class OxaLazy<T extends object, C> implements DoCheck {
+  @Input('lazy') lazyConfig: LazyConfig<T> | null = null
 
-  @Input('lazyInputs') inputs: { [key in keyof T]?: T[key] }
+  private inputsDiffer: KeyValueDiffer<keyof T, T[keyof T]>
 
-  @Input('lazyOutputs') outputs: { [key in string]?: (...args: any[]) => void }
+  private componentRef: ComponentRef<T>
 
-  @Input('lazyParent') parent: boolean
-
-  @Input('lazyInjector') injector: Injector
-
-  @Input('lazyNgModule') ngModule: Type<any>
-
-  @Input('lazyInit') init: (cmp: T) => void
-
-  private differ: KeyValueDiffer<keyof T, T[keyof T]>
-  private onInit$ = new ReplaySubject<void>()
-  private doCheck$ = new ReplaySubject<void>()
+  private ngClassInstance: NgClass
 
   constructor(
-    // @Attribute('testProp') private testProp: string,
+    @Attribute('component') private component: string,
     private vcr: ViewContainerRef,
-    private templateRef: TemplateRef<any>,
+    private templateRef: TemplateRef<C>,
     private differs: KeyValueDiffers,
-    private lazyService: LazyService
+    private lazyService: LazyService,
+    private renderer: Renderer2
   ) {
-    this.differ = this.differs.find({}).create()
+    this.inputsDiffer = this.differs.find({}).create()
 
-    this.onInit$
-      .pipe(switchMap(() => from(this.lazyService.getObject(this.loadName))))
+    from(this.lazyService.getObject(this.component))
       .pipe(
         map(cmp => {
-          const ref = createComponent(cmp, this.vcr, this.injector, this.ngModule, this.templateRef)
-          return applyInputs(ref, this.inputs, this.outputs)
-        }),
-        switchMap(ref => this.doCheck$.pipe(map(() => ref)))
+          const comp = fulfillComponent(cmp, this.lazyConfig ?? {}, this.vcr, this.templateRef)
+          comp.changeDetectorRef.markForCheck()
+          ;(this.lazyConfig as LazyConfig<T>)?.init?.(comp.instance)
+
+          return comp
+        })
       )
-      .pipe(
-        tap(ref => {
-          const changes = this.differ.diff(this.inputs as any)
-          if (changes && ref) {
-            updateComponentIO<T>(this.parent, ref, changes, vcr)
-          }
-        }),
-        map(ref => ref.instance)
-      )
-      .pipe(distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe(cmp => this.init?.(cmp))
+      .pipe(takeUntilDestroyed())
+      .subscribe(c => {
+        this.componentRef = c
+        if ((this.lazyConfig as LazyConfig<T>)?.class) {
+          this.ngClassInstance = new NgClass(null as any, null as any, this.componentRef.location, this.renderer)
+          this.ngClassInstance.ngClass = (this.lazyConfig as LazyConfig<T>).class
+        }
+      })
   }
 
   ngDoCheck(): void {
-    this.doCheck$.next()
-  }
-
-  ngOnInit(): void {
-    this.onInit$.next()
+    const changes = this.inputsDiffer.diff((this.lazyConfig as LazyConfig<T>)?.inputs as any)
+    if (changes && this.componentRef) {
+      applyChanges(this.componentRef, changes)
+      this.componentRef.changeDetectorRef.markForCheck()
+    }
+    this.ngClassInstance?.ngDoCheck()
   }
 }
 
@@ -90,60 +103,52 @@ function applyChanges<T>(ref: ComponentRef<T>, changes: KeyValueChanges<keyof T,
   })
 }
 
-function updateComponentIO<T>(parent: boolean, ref: ComponentRef<T>, changes: any, vcr: ViewContainerRef) {
-  if (parent) {
-    applyChanges(ref, changes)
-    ref.changeDetectorRef.markForCheck()
-  } else {
-    const detached = vcr.detach()
-    applyChanges(ref, changes)
-    vcr.insert(detached!)
-  }
-}
-
-function resolveModuleRef(injector: Injector, ngModule: Type<any>) {
+function resolveModuleRef<T>(injector: Injector, ngModule: Type<T>) {
   return ngModule ? createNgModule(ngModule, getParentInjector(injector)) : undefined
 }
 
-function renderProjectedContent(vcr: ViewContainerRef, templateRef: TemplateRef<any>) {
-  const content = vcr.createEmbeddedView(templateRef)
-
+function renderProjectedContent<C>(vcr: ViewContainerRef, templateRef: TemplateRef<C>) {
+  const content = vcr.createEmbeddedView(templateRef, null, { index: 0 })
+  content.detach()
+  content.detectChanges()
+  content.reattach()
   return content
 }
 
-function applyInputs<T>(
-  componentRef: ComponentRef<T>,
-  inputs: { [key in keyof T]?: T[key] },
-  outputs: { [key in string]?: (...args: any[]) => void }
-) {
+function applyInputs<T>(componentRef: ComponentRef<T>, inputs: { [key in keyof T]?: T[key] }, outputs: OutputsType<T>) {
   Object.entries(inputs ?? {}).forEach(([key, entry]) => {
     if (key) {
       componentRef.setInput(key, entry)
     }
   })
 
-  Object.keys(outputs ?? {})
-    .filter(p => componentRef.instance[p as keyof T])
-    .forEach(p =>
-      (componentRef.instance[p as keyof T] as Observable<unknown>).subscribe(event => {
-        componentRef.changeDetectorRef.markForCheck()
-        return outputs[p as keyof T]?.(event)
+  Object.keys(outputs ?? {}).forEach(p => {
+    if (componentRef.instance[p as keyof T]) {
+      ;(componentRef.instance[p as keyof T] as Observable<T[keyof T]>).subscribe(event => {
+        return outputs[p as keyof Outputs<T>]?.(event as any)
       })
-    )
+    } else {
+      ;(componentRef.location.nativeElement as HTMLElement).addEventListener(p, event =>
+        outputs[p as keyof Outputs<T>]?.(event as any)
+      )
+    }
+  })
+
   return componentRef
 }
 
-function createComponent<T>(
+function createComponent<T, C>(
   cmp: Type<T>,
   vcr: ViewContainerRef,
   injector: Injector,
-  ngModule: Type<any>,
-  templateRef: TemplateRef<any>
+  ngModule: Type<unknown>,
+  templateRef: TemplateRef<C>
 ) {
   vcr.clear()
-  let moduleRef = resolveModuleRef(injector ?? vcr.injector, ngModule)
+  const moduleRef = resolveModuleRef(injector ?? vcr.injector, ngModule)
 
   const content = renderProjectedContent(vcr, templateRef)
+  content.markForCheck()
 
   const componentRef = vcr.createComponent(cmp, {
     index: vcr.length,
@@ -153,4 +158,14 @@ function createComponent<T>(
   })
 
   return componentRef
+}
+
+function fulfillComponent<T, C>(
+  cmp: Type<T>,
+  config: LazyConfig<T>,
+  vcr: ViewContainerRef,
+  templateRef: TemplateRef<C>
+) {
+  const ref = createComponent(cmp, vcr, config.injector!, config.ngModule!, templateRef)
+  return applyInputs(ref, config.inputs!, config.outputs!)
 }

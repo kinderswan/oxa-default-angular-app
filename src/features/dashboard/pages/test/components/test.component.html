@@ -1,9 +1,9 @@
 <p>test works!</p>
 <ng-container
-  *lazy="
-    'matProgressBar';
+  *lazy="{
     inputs: {
       value: value$ | push
     }
-  ">
+  }"
+  component="mat-progress-bar">
 </ng-container>

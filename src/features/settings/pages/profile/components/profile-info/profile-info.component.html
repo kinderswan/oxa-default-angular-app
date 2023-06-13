@@ -1,4 +1,4 @@
-<ng-container *rxLet="profile$ | push; let profile">
+<ng-container *rxLet="profile$ | push; let profile; strategy: 'native'">
   <div class="wrapper">
     <h2 class="mat-h2">Email:</h2>
     <h2>{{ profile }}</h2>

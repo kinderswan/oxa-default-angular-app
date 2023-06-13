@@ -1,5 +1,5 @@
 <form [formGroup]="tableForm" class="mat-elevation-z1">
-  <ng-container *rxLet="tableData$; let tableData; suspense: suspense; suspenseTrigger: isLoading$; parent: true">
+  <ng-container *rxLet="tableData$; let tableData; suspense: suspense; suspenseTrigger: isLoading$; strategy: 'native'">
     <table
       mat-table
       matSort
@@ -11,20 +11,32 @@
       [trackBy]="trackItemsFn">
       <ng-container *rxIf="selectionConfig; strategy: 'native'" matColumnDef="select">
         <th mat-header-cell *matHeaderCellDef>
-          <mat-checkbox
-            (change)="$event ? toggleAllRows() : null"
-            [checked]="selection.hasValue() && isAllSelected()"
-            [indeterminate]="selection.hasValue() && !isAllSelected()"
-            [disabled]="selectionConfig.isDisabledFn() || !tableData?.items?.length">
-          </mat-checkbox>
+          <ng-container
+            *lazy="{
+              inputs: {
+                checked: selection.hasValue() && isAllSelected(),
+                indeterminate: selection.hasValue() && !isAllSelected(),
+                disabled: selectionConfig.isDisabledFn() || !tableData?.items?.length
+              },
+              outputs: {
+                change: headerCellCheckboxChange
+              }
+            }"
+            component="mat-checkbox"></ng-container>
         </th>
         <td mat-cell *matCellDef="let row">
-          <mat-checkbox
-            (click)="$event.stopPropagation()"
-            (change)="$event ? selection.toggle(row) : null"
-            [checked]="selection.isSelected(row)"
-            [disabled]="selectionConfig.isDisabledFn()">
-          </mat-checkbox>
+          <ng-container
+            *lazy="{
+              inputs: {
+                checked: selection.isSelected(row),
+                disabled: selectionConfig.isDisabledFn()
+              },
+              outputs: {
+                change: rowCellCheckboxChange(row),
+                click: rowCellCheckboxClick
+              }
+            }"
+            component="mat-checkbox"></ng-container>
         </td>
       </ng-container>
 
@@ -43,7 +55,7 @@
               <ng-container *ngSwitchCase="'date'">{{ item[column] | date : 'MM.dd.yyyy hh:mm a' }}</ng-container>
               <ng-container *ngSwitchCase="'input'">
                 <div>
-                  <ng-container *rxIf="allowEditFn?.(item.id); else show">
+                  <ng-container *rxIf="allowEditFn?.(item.id); else show; strategy: 'native'">
                     <ng-container
                       [ngTemplateOutlet]="inputCell"
                       [ngTemplateOutletContext]="{
@@ -56,7 +68,7 @@
               </ng-container>
               <ng-container *ngSwitchCase="'dropdown'">
                 <div>
-                  <ng-container *rxIf="allowEditFn?.(item.id); else show">
+                  <ng-container *rxIf="allowEditFn?.(item.id); else show; strategy: 'native'">
                     <ng-container
                       [ngTemplateOutlet]="dropdownCell"
                       [ngTemplateOutletContext]="{

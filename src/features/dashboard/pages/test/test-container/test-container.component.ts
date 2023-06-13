@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DoCheck } from '@angular/core'
+import { ChangeDetectionStrategy, Component } from '@angular/core'
 import { TestComponent } from '../components/test.component'
 
 @Component({

@@ -1,15 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
-import { MatButtonModule } from '@angular/material/button'
-import { MatIconModule } from '@angular/material/icon'
-import { MatToolbarModule } from '@angular/material/toolbar'
 import { RouterModule } from '@angular/router'
+import { OxaLazy } from '../lazy/lazy.directive'
 
 @Component({
   selector: 'oxa-toolbar',
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss'],
   standalone: true,
-  imports: [MatToolbarModule, MatIconModule, MatButtonModule, RouterModule],
+  imports: [RouterModule, OxaLazy],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToolbarComponent {}

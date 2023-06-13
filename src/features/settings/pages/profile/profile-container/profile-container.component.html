@@ -1,4 +1,11 @@
-<oxa-header [title]="'Profile'" [icon]="'face'"></oxa-header>
+<ng-container
+  *lazy="{
+    inputs: {
+      title: 'Profile',
+      icon: 'face'
+    }
+  }"
+  component="oxa-header"></ng-container>
 <mat-card class="signin-card mat-elevation-z1">
   <mat-card-header class="signin-header">
     <mat-card-title>

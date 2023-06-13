@@ -5,10 +5,10 @@ import { MatDividerModule } from '@angular/material/divider'
 import { Core } from '@core/store/core.actions'
 import { CoreState } from '@core/store/core.state'
 import { Select, Store } from '@ngxs/store'
-import { HeaderComponent } from '@shared/components/header/header.component'
 import { Observable } from 'rxjs'
 import { ProfileActionsComponent } from '../components/profile-actions/profile-actions.component'
 import { ProfileInfoComponent } from '../components/profile-info/profile-info.component'
+import { OxaLazy } from '@shared/components/lazy/lazy.directive'
 
 @Component({
   selector: 'oxa-profile-container',
@@ -16,14 +16,7 @@ import { ProfileInfoComponent } from '../components/profile-info/profile-info.co
   styleUrls: ['./profile-container.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatButtonModule,
-    MatCardModule,
-    MatDividerModule,
-    HeaderComponent,
-    ProfileInfoComponent,
-    ProfileActionsComponent,
-  ],
+  imports: [MatButtonModule, MatCardModule, MatDividerModule, ProfileInfoComponent, ProfileActionsComponent, OxaLazy],
 })
 export class ProfileContainerComponent {
   constructor(private store: Store) {}

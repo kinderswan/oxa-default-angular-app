@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
-import { MatButtonModule } from '@angular/material/button'
-import { MatDividerModule } from '@angular/material/divider'
-import { HeaderComponent } from '@shared/components/header/header.component'
 import { OxaLazy } from '@shared/components/lazy/lazy.directive'
-import { MediaWrapperComponent } from '../components/media-wrapper/media-wrapper.component'
-import { MediaModule } from '../media.module'
+import { lazyServiceFactoryProvider } from '@shared/components/lazy/lazy.service'
 
 @Component({
   selector: 'oxa-media-container',
@@ -12,10 +8,14 @@ import { MediaModule } from '../media.module'
   styleUrls: ['./media-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [MediaWrapperComponent, MatButtonModule, MatDividerModule, HeaderComponent, OxaLazy],
+  imports: [OxaLazy],
+  providers: [
+    lazyServiceFactoryProvider({
+      'oxa-media-wrapper': () =>
+        import('@features/dashboard/pages/media/components/media-wrapper/media-wrapper.component').then(
+          c => c.MediaWrapperComponent
+        ),
+    }),
+  ],
 })
-export class MediaContainerComponent {
-  constructor() {}
-
-  ngModule = MediaModule
-}
+export class MediaContainerComponent {}

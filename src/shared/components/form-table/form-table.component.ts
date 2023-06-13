@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections'
-import { DatePipe, NgFor, NgSwitch, NgSwitchCase, NgTemplateOutlet } from '@angular/common'
+import { DatePipe, NgSwitch, NgSwitchCase, NgTemplateOutlet } from '@angular/common'
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -21,7 +21,6 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
-import { MatCheckboxModule } from '@angular/material/checkbox'
 import { MatFormFieldModule } from '@angular/material/form-field'
 import { MatInputModule } from '@angular/material/input'
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator'
@@ -82,7 +81,6 @@ export interface BaseFormTable<T extends { id: string }> {
     DatePipe,
     MatSelectModule,
     MatProgressSpinnerModule,
-    MatCheckboxModule,
     MatSortModule,
     PushPipe,
     RxIf,
@@ -91,7 +89,7 @@ export interface BaseFormTable<T extends { id: string }> {
     NgSwitch,
     NgSwitchCase,
     NgTemplateOutlet,
-    NgFor,
+    OxaLazy,
   ],
   templateUrl: './form-table.component.html',
   styleUrls: ['./form-table.component.scss'],
@@ -249,5 +247,17 @@ export class FormTableComponent<T extends { id: string }> implements AfterViewIn
 
   onSortChange($event: Sort) {
     this.sortChange$.next($event)
+  }
+
+  headerCellCheckboxChange = ($event: unknown) => {
+    $event ? this.toggleAllRows() : null
+  }
+
+  rowCellCheckboxChange = (row: T) => {
+    return ($event: unknown) => ($event ? this.selection.toggle(row) : null)
+  }
+
+  rowCellCheckboxClick = ($event: Event) => {
+    $event.stopPropagation()
   }
 }

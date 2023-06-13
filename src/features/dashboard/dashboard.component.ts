@@ -11,4 +11,6 @@ import { Observable } from 'rxjs'
 })
 export class DashboardComponent {
   @Select(SharedState.getDashboardNavigationItems) navItems$: Observable<SidenavItem[]>
+
+  init = (e: any) => console.log(e)
 }

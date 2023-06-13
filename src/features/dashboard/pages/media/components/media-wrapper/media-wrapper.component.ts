@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core'
+import { NgClass } from '@angular/common'
+import { ChangeDetectionStrategy, Component } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { FormArray, FormBuilder, ReactiveFormsModule } from '@angular/forms'
 import { MatButtonModule } from '@angular/material/button'
@@ -9,28 +10,19 @@ import { Actions, Select, Store, ofActionDispatched, ofActionSuccessful } from '
 import { RxIf } from '@rx-angular/template/if'
 import { LetDirective } from '@rx-angular/template/let'
 import {
-  BaseFormTable,
-  ColumnConfig,
-  FormTableComponent,
-  FormTableSelectionConfig,
-  FormTableState,
+  type ColumnConfig,
+  type FormTableComponent,
+  type FormTableSelectionConfig,
+  type FormTableState,
 } from '@shared/components/form-table/form-table.component'
-import { OxaLazy } from '@shared/components/lazy/lazy.directive'
-import { SearchFieldComponent } from '@shared/components/search-field/search-field.component'
+import { OutputsType, OxaLazy } from '@shared/components/lazy/lazy.directive'
+import { type SearchFieldComponent } from '@shared/components/search-field/search-field.component'
 import { Observable, tap } from 'rxjs'
 
 @Component({
   selector: 'oxa-media-wrapper',
   standalone: true,
-  imports: [
-    OxaLazy,
-    ReactiveFormsModule,
-    MatButtonModule,
-    RxIf,
-    LetDirective,
-    SearchFieldComponent,
-    FormTableComponent,
-  ],
+  imports: [OxaLazy, ReactiveFormsModule, MatButtonModule, RxIf, LetDirective, NgClass],
   templateUrl: './media-wrapper.component.html',
   styleUrls: ['./media-wrapper.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,7 +34,7 @@ export class MediaWrapperComponent {
 
   @Select(MediaState.getIsSearchMode) searchMode$: Observable<boolean>
 
-  @ViewChild(SearchFieldComponent) searchField: SearchFieldComponent
+  private searchField: SearchFieldComponent
 
   selectedItems: MediaItemModel[] = []
 
@@ -112,16 +104,16 @@ export class MediaWrapperComponent {
 
   private rawItems: MediaItemModel[]
 
-  tableOutputs = {
-    selectionChange: (event: any) => this.onSelectionChange(event),
-    tableStateChange: (event: any) => this.loadTableData(event),
+  tableOutputs: OutputsType<FormTableComponent<MediaItemModel>> = {
+    selectionChange: (event: MediaItemModel[]) => this.onSelectionChange(event),
+    tableStateChange: (event: FormTableState) => this.loadTableData(event),
   }
 
-  searchOutputs = {
-    valueChanges: (event: any) => this.onSearchChange(event),
+  searchOutputs: OutputsType<SearchFieldComponent> = {
+    valueChanges: (event: string) => this.onSearchChange(event),
   }
 
-  tableComponent: BaseFormTable<MediaItemModel>
+  tableComponent: FormTableComponent<MediaItemModel>
 
   constructor(private store: Store, private actions: Actions, private fb: FormBuilder) {
     this.tableItems$ = this.items$.pipe(
@@ -156,8 +148,12 @@ export class MediaWrapperComponent {
     })
   }
 
-  initTable = (event: any) => {
+  initTable = (event: FormTableComponent<MediaItemModel>) => {
     this.tableComponent = event
+  }
+
+  initSearchField = (event: SearchFieldComponent) => {
+    this.searchField = event
   }
 
   addNewItem() {

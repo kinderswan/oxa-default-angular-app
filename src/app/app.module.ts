@@ -15,9 +15,9 @@ import { Core } from '@core/store/core.actions'
 import { CoreState } from '@core/store/core.state'
 import { environment } from '@oxa/environments/environment'
 import { RxIf } from '@rx-angular/template/if'
+import { lazyServiceFactoryProvider } from '@shared/components/lazy/lazy.service'
 import { SharedState } from '@shared/store/shared.state'
 import { AppComponent } from './app.component'
-import { lazyServiceFactoryProvider } from '@shared/components/lazy/lazy.service'
 
 @NgModule({
   declarations: [AppComponent],
@@ -66,17 +66,10 @@ import { lazyServiceFactoryProvider } from '@shared/components/lazy/lazy.service
       'oxa-sidenav': () => import('@shared/components/sidenav/sidenav.component').then(c => c.SidenavComponent),
       'oxa-header': () => import('@shared/components/header/header.component').then(c => c.HeaderComponent),
 
-      matButton: () => import('@angular/material/button').then(c => c.MatButton),
-      matIcon: () => import('@angular/material/icon').then(c => c.MatIcon),
-      matCheckbox: () => import('@angular/material/checkbox').then(c => c.MatCheckbox),
-      matSpinner: () => import('@angular/material/progress-spinner').then(c => c.MatProgressSpinner),
-      matNavList: () => import('@angular/material/list').then(c => c.MatNavList),
-      matNavListItem: () => import('@angular/material/list').then(c => c.MatListItem),
-      matSidenavContent: () => import('@angular/material/sidenav').then(c => c.MatSidenavContent),
-      matToolbar: () => import('@angular/material/toolbar').then(c => c.MatToolbar),
-      matToolbarRow: () => import('@angular/material/toolbar').then(c => c.MatToolbarRow),
-      matFormField: () => import('@angular/material/form-field').then(c => c.MatFormField),
-      matProgressBar: () => import('@angular/material/progress-bar').then(c => c.MatProgressBar),
+      'mat-icon': () => import('@angular/material/icon').then(c => c.MatIcon),
+      'mat-checkbox': () => import('@angular/material/checkbox').then(c => c.MatCheckbox),
+      'mat-toolbar': () => import('@angular/material/toolbar').then(c => c.MatToolbar),
+      'mat-progress-bar': () => import('@angular/material/progress-bar').then(c => c.MatProgressBar),
     }),
   ],
   bootstrap: [AppComponent],

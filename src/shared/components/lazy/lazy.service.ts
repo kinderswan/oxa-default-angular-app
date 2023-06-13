@@ -17,6 +17,7 @@ export class LazyService {
 
   constructor() {
     if (!lazyServiceInstance) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       lazyServiceInstance = this
     }
     return lazyServiceInstance

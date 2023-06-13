@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core'
-import { MatIconModule } from '@angular/material/icon'
 import { MatDividerModule } from '@angular/material/divider'
+import { OxaLazy } from '../lazy/lazy.directive'
 
 @Component({
   selector: 'oxa-header',
   standalone: true,
-  imports: [MatIconModule, MatDividerModule],
+  imports: [MatDividerModule, OxaLazy],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,5 +1,11 @@
 <div class="title-divider">
-  <ng-container mat-stroked-button *lazy="'oxa-search-field'; outputs: searchOutputs"></ng-container>
+  <ng-container
+    *lazy="{
+      outputs: searchOutputs,
+      init: initSearchField,
+      class: 'searchField'
+    }"
+    component="oxa-search-field"></ng-container>
   <div class="buttons-wrapper">
     <button mat-raised-button color="primary" (click)="addNewItem()">Add Item</button>
     <button mat-raised-button color="accent" (click)="mergeItems()" [disabled]="selectedItems.length < 2">
@@ -9,22 +15,23 @@
 </div>
 
 <ng-container
-  *lazy="'oxa-form-table'; 
-  inputs: {
-    items: tableItems$,
-    total: total$,
-    searchMode: searchMode$,
-    loading: isLoading$,
-    pageSizes: [5, 10, 15],
-    columnConfig: columnsConfig,
-    selectionConfig: selectionConfig,
-    actionTemplate: actionTemplate,
-    tableForm: tableForm,
-    allowEditFn: allowEditFn,
-  };  
-  outputs: tableOutputs;
-  init: initTable;
-">
+  *lazy="{
+    inputs: $any({
+      items: tableItems$,
+      total: total$,
+      searchMode: searchMode$,
+      loading: isLoading$,
+      pageSizes: [5, 10, 15],
+      columnConfig: columnsConfig,
+      selectionConfig: selectionConfig,
+      actionTemplate: actionTemplate,
+      tableForm: tableForm,
+      allowEditFn: allowEditFn,
+    }),
+    outputs: tableOutputs,
+    init: initTable,
+}"
+  component="oxa-form-table">
 </ng-container>
 <ng-template #actionTemplate let-item>
   <div>
@@ -36,13 +43,13 @@
       mat-stroked-button
       type="button"
       (click)="onRowCancel(item.id)"
-      *rxIf="currentRow === item.id || item.id === 'null'">
+      *rxIf="currentRow === item.id || item.id === 'null'; strategy: 'native'">
       Cancel
     </button>
 
     <button
       mat-stroked-button
-      *rxIf="!(currentRow === item.id || item.id === 'null')"
+      *rxIf="!(currentRow === item.id || item.id === 'null'); strategy: 'native'"
       type="button"
       (click)="onRowRemove(item.id)">
       Remove

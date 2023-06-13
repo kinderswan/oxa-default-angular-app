@@ -1,10 +1,10 @@
 <ng-container
-  *lazy="
-    'oxa-header';
+  *lazy="{
     inputs: {
       title: 'Media',
       icon: 'perm_media'
     }
-  "></ng-container>
+  }"
+  component="oxa-header"></ng-container>
 
-<oxa-media-wrapper></oxa-media-wrapper>
+<ng-container *lazy="null" component="oxa-media-wrapper"></ng-container>

@@ -1,4 +1,4 @@
-<oxa-toolbar>
+<ng-container *lazy="null" component="oxa-toolbar">
   <a routerLink="../dashboard" title="Home">
     <span>ClassLink Media</span>
   </a>
@@ -29,14 +29,29 @@
   </svg>
 
   <div>&nbsp;</div>
-</oxa-toolbar>
-<oxa-sidenav [sidenavItemTemplate]="sidenavItemTemplate" [items]="navItems$">
+</ng-container>
+<ng-container
+  *lazy="{
+    inputs: {
+      sidenavItemTemplate: sidenavItemTemplate,
+      items: navItems$
+    }
+  }"
+  component="oxa-sidenav">
   <div class="router-wrapper">
     <router-outlet></router-outlet>
   </div>
-</oxa-sidenav>
+</ng-container>
 
 <ng-template let-item #sidenavItemTemplate>
-  <mat-icon color="primary">{{ item.icon }}</mat-icon>
+  <ng-container
+    *lazy="{
+      inputs: {
+        color: 'primary'
+      }
+    }"
+    component="mat-icon"
+    >{{ item.icon }}</ng-container
+  >
   <span>{{ item.title }}</span>
 </ng-template>

@@ -1,21 +1,20 @@
-import { importProvidersFrom, NgModule } from '@angular/core'
+import { NgModule, importProvidersFrom } from '@angular/core'
 
 import { RouterModule } from '@angular/router'
-import { MediaState } from '@dashboard/media/store/media.state'
-import { NgxsModule } from '@ngxs/store'
 import { MediaContainerComponent } from './media-container/media-container.component'
-import { lazyServiceFactoryProvider } from '@shared/components/lazy/lazy.service'
+import { NgxsModule } from '@ngxs/store'
+import { MediaState } from './store/media.state'
 
 @NgModule({
-  imports: [MediaContainerComponent, RouterModule.forChild([{ path: '', component: MediaContainerComponent }])],
-  providers: [
-    importProvidersFrom(NgxsModule.forFeature([MediaState])),
-    lazyServiceFactoryProvider({
-      'oxa-media-wrapper': () =>
-        import('@features/dashboard/pages/media/components/media-wrapper/media-wrapper.component').then(
-          c => c.MediaWrapperComponent
-        ),
-    }),
+  imports: [
+    MediaContainerComponent,
+    RouterModule.forChild([
+      {
+        path: '',
+        component: MediaContainerComponent,
+        providers: [importProvidersFrom(NgxsModule.forFeature([MediaState]))],
+      },
+    ]),
   ],
   exports: [RouterModule],
 })

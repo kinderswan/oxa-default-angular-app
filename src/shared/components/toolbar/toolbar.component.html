@@ -1,5 +1,17 @@
-<mat-toolbar color="primary">
+<!-- <mat-toolbar color="primary">
   <mat-toolbar-row>
     <ng-content></ng-content>
   </mat-toolbar-row>
-</mat-toolbar>
+</mat-toolbar> -->
+
+<ng-container
+  *lazy="{
+    inputs: {
+      color: 'primary'
+    }
+  }"
+  component="mat-toolbar">
+  <div class="mat-toolbar-row">
+    <ng-content></ng-content>
+  </div>
+</ng-container>
